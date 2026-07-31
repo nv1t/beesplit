@@ -4,8 +4,6 @@ import type { GroupState, Expense } from '../types'
 import { simplifyDebts } from '../utils/settle'
 import { mergeStates, type MergeResult } from '../utils/merge'
 
-const STORAGE_KEY = 'beesplit.data.v1'
-
 function defaultState(): GroupState {
   return { members: [], expenses: [], currencySymbol: '$' }
 }
@@ -27,29 +25,17 @@ function readFromHash(): GroupState | null {
   return decodeHash(hash)
 }
 
-function readFromStorage(): GroupState | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return { ...defaultState(), ...JSON.parse(raw) }
-  } catch (e) {
-    console.warn('Failed to load saved data, starting fresh.', e)
-  }
-  return null
-}
-
 function loadState(): GroupState {
-  return readFromHash() ?? readFromStorage() ?? defaultState()
+  return readFromHash() ?? defaultState()
 }
 
 const state = reactive<GroupState>(loadState())
 
-// immediate: true also persists a shared link's data to localStorage right
-// away, so it survives a plain reload (i.e. once the hash is gone) on this
-// same browser, and normalizes the URL hash to reflect the loaded state.
+// immediate: true normalizes the URL hash to reflect the loaded state right
+// away. The URL is the only place this data lives — nothing touches disk.
 watch(
   state,
   (value) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
     const encoded = compressToEncodedURIComponent(JSON.stringify(value))
     history.replaceState(null, '', `#${encoded}`)
   },

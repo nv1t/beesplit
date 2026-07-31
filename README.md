@@ -1,8 +1,8 @@
 # 🐝 BeeSplit
 
 A frontend-only expense splitter for groups. No backend, no accounts, no
-tracking — everything runs in your browser and data is saved to
-`localStorage` on your device only.
+tracking, and no local storage — the entire group's data is compressed and
+encoded directly into the page's URL.
 
 **Live app:** https://nv1t.github.io/beesplit/
 
@@ -15,13 +15,19 @@ tracking — everything runs in your browser and data is saved to
 - Automatically computed running balance per person
 - A simplified "who pays whom" settlement list that minimizes the number
   of payments needed to settle up
+- Bookmark or copy the URL at any time to save your group, or share it with
+  others so they can view or add to it
+- Paste someone else's BeeSplit link to merge their people and expenses into
+  yours — everyone converges on one shared "truth" instead of overwriting
+  each other
 - Works offline once loaded; nothing is sent to a server
 
 ## Tech stack
 
 - [Vue 3](https://vuejs.org/) + TypeScript, built with [Vite](https://vite.dev/)
 - State is a small reactive composable ([`src/composables/useGroupData.ts`](src/composables/useGroupData.ts))
-  synced to `localStorage` — no external state library
+  compressed with [`lz-string`](https://github.com/pieroxy/lz-string) and kept in
+  the URL hash via `history.replaceState` — no external state library, no storage
 - No backend, no database, no accounts
 
 ## Project structure
@@ -29,9 +35,10 @@ tracking — everything runs in your browser and data is saved to
 ```
 src/
   components/       UI panels: People, Add/Edit expense, Expense list, Balances
-  composables/       useGroupData.ts — state, persistence, balance calculations
+  composables/       useGroupData.ts — state, URL persistence, balance calculations
   utils/settle.ts     Debt-simplification algorithm for settlements
-  types.ts            Member / Expense / Settlement types
+  utils/merge.ts       Combines two shared links into one group
+  types.ts            Member / Expense / Settlement / GroupState types
 ```
 
 ## Development
@@ -60,6 +67,9 @@ page (`username.github.io/repo-name/`) or a custom domain.
 
 ## Data & privacy
 
-All group and expense data lives only in your browser's `localStorage`
-(key `beesplit.data.v1`). Clearing your browser data or switching devices/
-browsers will lose or not show that data — there is no sync between devices.
+All group and expense data lives only in the page's URL — nothing is written
+to disk and nothing is sent to a server. Closing the tab without saving
+(bookmarking, copying, or sharing) the link loses the data. Opening a
+different BeeSplit link always starts from exactly what that link encodes;
+use the "Merge a link" button to combine it with what you already have open
+instead of replacing it.

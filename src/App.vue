@@ -114,9 +114,9 @@ function handleMerge() {
     </main>
 
     <footer class="app-footer">
-      Data is stored in this browser (localStorage) and encoded into this page's URL —
-      bookmark or share the link to save or continue your group from anywhere.
-      Nothing is sent to a server.
+      All data lives only in this page's URL — nothing is saved to this device or
+      sent to a server. Bookmark or copy the link to keep your group; closing this
+      tab without saving the link will lose it.
     </footer>
   </div>
 </template>
