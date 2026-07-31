@@ -117,10 +117,22 @@ function cancelMergeReview() {
     </header>
 
     <nav class="tabs">
-      <button :class="{ active: tab === 'expenses' }" @click="tab = 'expenses'">💰 {{ $t('tabs.expenses') }}</button>
-      <button :class="{ active: tab === 'people' }" @click="tab = 'people'">👥 {{ $t('tabs.people') }}</button>
-      <button :class="{ active: tab === 'balances' }" @click="tab = 'balances'">⚖️ {{ $t('tabs.balances') }}</button>
-      <button :class="{ active: tab === 'settings' }" @click="tab = 'settings'">⚙️ {{ $t('tabs.settings') }}</button>
+      <button :class="{ active: tab === 'expenses' }" @click="tab = 'expenses'">
+        <span class="tab-icon">💰</span>
+        <span class="tab-label">{{ $t('tabs.expenses') }}</span>
+      </button>
+      <button :class="{ active: tab === 'people' }" @click="tab = 'people'">
+        <span class="tab-icon">👥</span>
+        <span class="tab-label">{{ $t('tabs.people') }}</span>
+      </button>
+      <button :class="{ active: tab === 'balances' }" @click="tab = 'balances'">
+        <span class="tab-icon">⚖️</span>
+        <span class="tab-label">{{ $t('tabs.balances') }}</span>
+      </button>
+      <button :class="{ active: tab === 'settings' }" @click="tab = 'settings'">
+        <span class="tab-icon">⚙️</span>
+        <span class="tab-label">{{ $t('tabs.settings') }}</span>
+      </button>
     </nav>
 
     <main class="content">
@@ -362,21 +374,30 @@ function cancelMergeReview() {
 
 .tabs button {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
   border: none;
   background: transparent;
-  padding: 0.55rem 0.5rem;
-  min-height: 44px;
+  padding: 0.5rem 0.3rem;
+  min-height: 52px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
   color: var(--text-muted);
 }
 
-@media (max-width: 420px) {
-  .tabs button {
-    font-size: 0.78rem;
-    padding: 0.5rem 0.3rem;
-  }
+.tab-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.tab-label {
+  font-size: 0.7rem;
+  line-height: 1.15;
+  text-align: center;
 }
 
 .tabs button.active {
