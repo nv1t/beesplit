@@ -12,6 +12,8 @@ export default {
     settings: 'Impostazioni',
   },
   settings: {
+    languageHeading: 'Lingua',
+    languageHint: 'Vale solo per questa scheda: al prossimo apertura di un nuovo link tornerà alla lingua del dispositivo.',
     mergeHeading: 'Unisci un link',
     mergeHint: "Unisci il link BeeSplit di un'altra persona a questo gruppo invece di sovrascriverlo.",
   },

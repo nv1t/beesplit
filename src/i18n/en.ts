@@ -12,6 +12,8 @@ export default {
     settings: 'Settings',
   },
   settings: {
+    languageHeading: 'Language',
+    languageHint: "Only affects this browser tab — resets to your device's language next time you open a fresh link.",
     mergeHeading: 'Merge a link',
     mergeHint: "Combine someone else's BeeSplit link with this group instead of overwriting it.",
   },

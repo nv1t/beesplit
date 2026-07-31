@@ -9,9 +9,10 @@ import Modal from './components/Modal.vue'
 import Avatar from './components/Avatar.vue'
 import { useGroupData, type MergePreview } from './composables/useGroupData'
 import { NEW_PERSON } from './utils/merge'
+import { LOCALE_OPTIONS } from './i18n'
 import type { Expense } from './types'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { members, currencySymbol, setCurrencySymbol, previewMerge, confirmMerge } = useGroupData()
 
 type Tab = 'expenses' | 'people' | 'balances' | 'settings'
@@ -152,6 +153,14 @@ function cancelMergeReview() {
       </section>
 
       <section v-show="tab === 'settings'" class="settings-tab">
+        <div class="panel">
+          <h2>{{ $t('settings.languageHeading') }}</h2>
+          <p class="panel-hint">{{ $t('settings.languageHint') }}</p>
+          <select v-model="locale">
+            <option v-for="opt in LOCALE_OPTIONS" :key="opt.code" :value="opt.code">{{ opt.label }}</option>
+          </select>
+        </div>
+
         <div class="panel">
           <h2>{{ $t('app.currencyLabel') }}</h2>
           <div class="currency-setting">

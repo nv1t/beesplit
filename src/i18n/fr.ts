@@ -12,6 +12,8 @@ export default {
     settings: 'Paramètres',
   },
   settings: {
+    languageHeading: 'Langue',
+    languageHint: "Concerne uniquement cet onglet — revient à la langue de l'appareil à la prochaine ouverture d'un nouveau lien.",
     mergeHeading: 'Fusionner un lien',
     mergeHint: "Combinez le lien BeeSplit d'une autre personne avec ce groupe au lieu de l'écraser.",
   },

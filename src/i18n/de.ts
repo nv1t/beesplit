@@ -12,6 +12,8 @@ export default {
     settings: 'Einstellungen',
   },
   settings: {
+    languageHeading: 'Sprache',
+    languageHint: 'Gilt nur für diesen Browser-Tab — wechselt beim nächsten Öffnen eines neuen Links wieder zur Gerätesprache.',
     mergeHeading: 'Link zusammenführen',
     mergeHint: 'Führe den Link einer anderen Person mit dieser Gruppe zusammen, statt sie zu überschreiben.',
   },

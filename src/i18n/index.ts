@@ -8,7 +8,17 @@ import it from './it'
 export type MessageSchema = typeof en
 
 const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'es', 'it'] as const
-type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
+export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
+
+// Each language's own name for itself (endonym) — shown the same regardless
+// of the current UI language, same convention as native OS language pickers.
+export const LOCALE_OPTIONS: { code: SupportedLocale; label: string }[] = [
+  { code: 'en', label: 'English' },
+  { code: 'de', label: 'Deutsch' },
+  { code: 'fr', label: 'Français' },
+  { code: 'es', label: 'Español' },
+  { code: 'it', label: 'Italiano' },
+]
 
 function detectLocale(): SupportedLocale {
   const candidates = navigator.languages?.length ? navigator.languages : [navigator.language]
