@@ -5,7 +5,7 @@ import { simplifyDebts } from '../utils/settle'
 import { mergeStates, type MergeResult } from '../utils/merge'
 
 function defaultState(): GroupState {
-  return { members: [], expenses: [], currencySymbol: '$' }
+  return { members: [], expenses: [], currencySymbol: '€' }
 }
 
 function decodeHash(hash: string): GroupState | null {
@@ -83,7 +83,7 @@ function removeExpense(id: string) {
 }
 
 function setCurrencySymbol(symbol: string) {
-  state.currencySymbol = symbol.trim() || '$'
+  state.currencySymbol = symbol.trim() || '€'
 }
 
 function extractHash(pasted: string): string {
