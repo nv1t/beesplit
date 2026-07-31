@@ -3,13 +3,17 @@ export default {
     currencyLabel: 'Valuta',
     copyLink: '🔗 Copia link',
     linkCopied: 'Link copiato ✓',
-    mergeLinkButton: '🔀 Unisci un link',
     copyPromptTitle: 'Copia questo link per salvare o condividere i tuoi dati:',
   },
   tabs: {
     expenses: 'Spese',
     people: 'Persone',
     balances: 'Saldi',
+    settings: 'Impostazioni',
+  },
+  settings: {
+    mergeHeading: 'Unisci un link',
+    mergeHint: "Unisci il link BeeSplit di un'altra persona a questo gruppo invece di sovrascriverlo.",
   },
   modal: {
     close: 'Chiudi',

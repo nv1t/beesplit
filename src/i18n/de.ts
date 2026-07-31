@@ -3,13 +3,17 @@ export default {
     currencyLabel: 'Währung',
     copyLink: '🔗 Link kopieren',
     linkCopied: 'Link kopiert ✓',
-    mergeLinkButton: '🔀 Link zusammenführen',
     copyPromptTitle: 'Kopiere diesen Link, um deine Daten zu speichern oder zu teilen:',
   },
   tabs: {
     expenses: 'Ausgaben',
     people: 'Personen',
     balances: 'Salden',
+    settings: 'Einstellungen',
+  },
+  settings: {
+    mergeHeading: 'Link zusammenführen',
+    mergeHint: 'Führe den Link einer anderen Person mit dieser Gruppe zusammen, statt sie zu überschreiben.',
   },
   modal: {
     close: 'Schließen',

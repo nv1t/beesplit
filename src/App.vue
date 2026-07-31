@@ -14,13 +14,12 @@ import type { Expense } from './types'
 const { t } = useI18n()
 const { members, currencySymbol, setCurrencySymbol, previewMerge, confirmMerge } = useGroupData()
 
-type Tab = 'expenses' | 'people' | 'balances'
+type Tab = 'expenses' | 'people' | 'balances' | 'settings'
 const tab = ref<Tab>('expenses')
 const editingExpense = ref<Expense | null>(null)
 const showExpenseModal = ref(false)
 const linkCopied = ref(false)
 
-const showMergeForm = ref(false)
 const mergeInput = ref('')
 const mergeMessage = ref('')
 const mergeError = ref('')
@@ -112,67 +111,16 @@ function cancelMergeReview() {
   <div class="app">
     <header class="app-header">
       <h1>🐝 BeeSplit</h1>
-      <div class="header-controls">
-        <div class="currency-setting">
-          <label for="currency">{{ $t('app.currencyLabel') }}</label>
-          <input
-            id="currency"
-            type="text"
-            maxlength="3"
-            :value="currencySymbol"
-            @change="setCurrencySymbol(($event.target as HTMLInputElement).value)"
-          />
-        </div>
-        <button type="button" class="share-btn" @click="copyShareLink">
-          {{ linkCopied ? $t('app.linkCopied') : $t('app.copyLink') }}
-        </button>
-        <button type="button" class="share-btn" @click="showMergeForm = !showMergeForm">
-          {{ $t('app.mergeLinkButton') }}
-        </button>
-      </div>
+      <button type="button" class="share-btn" @click="copyShareLink">
+        {{ linkCopied ? $t('app.linkCopied') : $t('app.copyLink') }}
+      </button>
     </header>
 
-    <form
-      v-if="showMergeForm && !mergePreview"
-      class="merge-form"
-      @submit.prevent="handlePreviewMerge"
-    >
-      <input
-        v-model="mergeInput"
-        type="text"
-        :placeholder="$t('merge.placeholder')"
-      />
-      <button type="submit" class="primary">{{ $t('merge.review') }}</button>
-    </form>
-
-    <div v-if="mergePreview" class="merge-review">
-      <p class="merge-review-title">
-        {{ $t('merge.matchTitle') }}
-      </p>
-      <div v-for="match in mergePreview.matches" :key="match.incomingId" class="match-row">
-        <span class="match-name">
-          <Avatar :id="match.incomingId" :name="match.incomingName" size="sm" />
-          {{ match.incomingName }}
-        </span>
-        <span class="match-arrow">{{ $t('merge.is') }}</span>
-        <select v-model="matchSelections[match.incomingId]">
-          <option :value="NEW_PERSON">{{ $t('merge.newPerson') }}</option>
-          <option v-for="m in members" :key="m.id" :value="m.id">{{ m.name }}</option>
-        </select>
-      </div>
-      <div class="actions">
-        <button type="button" class="primary" @click="confirmMergeReview">{{ $t('merge.confirm') }}</button>
-        <button type="button" @click="cancelMergeReview">{{ $t('merge.cancel') }}</button>
-      </div>
-    </div>
-
-    <p v-if="mergeMessage" class="merge-feedback success">{{ mergeMessage }}</p>
-    <p v-if="mergeError" class="merge-feedback error">{{ mergeError }}</p>
-
     <nav class="tabs">
-      <button :class="{ active: tab === 'expenses' }" @click="tab = 'expenses'">{{ $t('tabs.expenses') }}</button>
-      <button :class="{ active: tab === 'people' }" @click="tab = 'people'">{{ $t('tabs.people') }}</button>
-      <button :class="{ active: tab === 'balances' }" @click="tab = 'balances'">{{ $t('tabs.balances') }}</button>
+      <button :class="{ active: tab === 'expenses' }" @click="tab = 'expenses'">💰 {{ $t('tabs.expenses') }}</button>
+      <button :class="{ active: tab === 'people' }" @click="tab = 'people'">👥 {{ $t('tabs.people') }}</button>
+      <button :class="{ active: tab === 'balances' }" @click="tab = 'balances'">⚖️ {{ $t('tabs.balances') }}</button>
+      <button :class="{ active: tab === 'settings' }" @click="tab = 'settings'">⚙️ {{ $t('tabs.settings') }}</button>
     </nav>
 
     <main class="content">
@@ -189,6 +137,56 @@ function cancelMergeReview() {
 
       <section v-show="tab === 'balances'">
         <BalancesPanel />
+      </section>
+
+      <section v-show="tab === 'settings'" class="settings-tab">
+        <div class="panel">
+          <h2>{{ $t('app.currencyLabel') }}</h2>
+          <div class="currency-setting">
+            <label for="currency" class="sr-only">{{ $t('app.currencyLabel') }}</label>
+            <input
+              id="currency"
+              type="text"
+              maxlength="3"
+              :value="currencySymbol"
+              @change="setCurrencySymbol(($event.target as HTMLInputElement).value)"
+            />
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>{{ $t('settings.mergeHeading') }}</h2>
+          <p class="panel-hint">{{ $t('settings.mergeHint') }}</p>
+
+          <form v-if="!mergePreview" class="merge-form" @submit.prevent="handlePreviewMerge">
+            <input v-model="mergeInput" type="text" :placeholder="$t('merge.placeholder')" />
+            <button type="submit" class="primary">{{ $t('merge.review') }}</button>
+          </form>
+
+          <div v-if="mergePreview" class="merge-review">
+            <p class="merge-review-title">
+              {{ $t('merge.matchTitle') }}
+            </p>
+            <div v-for="match in mergePreview.matches" :key="match.incomingId" class="match-row">
+              <span class="match-name">
+                <Avatar :id="match.incomingId" :name="match.incomingName" size="sm" />
+                {{ match.incomingName }}
+              </span>
+              <span class="match-arrow">{{ $t('merge.is') }}</span>
+              <select v-model="matchSelections[match.incomingId]">
+                <option :value="NEW_PERSON">{{ $t('merge.newPerson') }}</option>
+                <option v-for="m in members" :key="m.id" :value="m.id">{{ m.name }}</option>
+              </select>
+            </div>
+            <div class="actions">
+              <button type="button" class="primary" @click="confirmMergeReview">{{ $t('merge.confirm') }}</button>
+              <button type="button" @click="cancelMergeReview">{{ $t('merge.cancel') }}</button>
+            </div>
+          </div>
+
+          <p v-if="mergeMessage" class="merge-feedback success">{{ mergeMessage }}</p>
+          <p v-if="mergeError" class="merge-feedback error">{{ mergeError }}</p>
+        </div>
       </section>
     </main>
 
@@ -236,31 +234,48 @@ function cancelMergeReview() {
   color: var(--accent);
 }
 
-.header-controls {
+.share-btn {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.7rem;
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.panel {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.panel h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+.panel-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.settings-tab {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .currency-setting {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
+  gap: 0.5rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
 }
 
 .currency-setting input {
   width: 3rem;
   text-align: center;
-}
-
-.share-btn {
-  font-size: 0.8rem;
-  padding: 0.4rem 0.7rem;
-  min-height: 36px;
-  white-space: nowrap;
 }
 
 .merge-form {
@@ -288,11 +303,10 @@ function cancelMergeReview() {
 }
 
 .merge-review {
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 1rem;
+  background: var(--surface-alt);
+  border-radius: 8px;
+  padding: 0.85rem;
   margin-bottom: 0.75rem;
-  box-shadow: var(--shadow);
 }
 
 .merge-review-title {
@@ -350,12 +364,19 @@ function cancelMergeReview() {
   flex: 1;
   border: none;
   background: transparent;
-  padding: 0.55rem 0.75rem;
+  padding: 0.55rem 0.5rem;
   min-height: 44px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
   color: var(--text-muted);
+}
+
+@media (max-width: 420px) {
+  .tabs button {
+    font-size: 0.78rem;
+    padding: 0.5rem 0.3rem;
+  }
 }
 
 .tabs button.active {
