@@ -1,4 +1,4 @@
-# GroupSplit
+# BeeSplit
 
 A frontend-only expense splitter for groups. No backend, no accounts — all data
 is stored in the browser's `localStorage`.

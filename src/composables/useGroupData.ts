@@ -2,7 +2,7 @@ import { reactive, computed, watch } from 'vue'
 import type { Member, Expense } from '../types'
 import { simplifyDebts } from '../utils/settle'
 
-const STORAGE_KEY = 'groupsplit.data.v1'
+const STORAGE_KEY = 'beesplit.data.v1'
 
 interface StoredState {
   members: Member[]

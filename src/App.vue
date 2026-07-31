@@ -26,7 +26,7 @@ function stopEditing() {
 <template>
   <div class="app">
     <header class="app-header">
-      <h1>GroupSplit</h1>
+      <h1>🐝 BeeSplit</h1>
       <div class="currency-setting">
         <label for="currency">Currency</label>
         <input
