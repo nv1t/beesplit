@@ -2,7 +2,7 @@ import { reactive, computed, watch } from 'vue'
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 import type { GroupState, Expense } from '../types'
 import { simplifyDebts } from '../utils/settle'
-import { mergeStates, type MergeResult } from '../utils/merge'
+import { buildMatchSuggestions, applyMerge, type MatchSuggestion, type MergeResult } from '../utils/merge'
 
 function defaultState(): GroupState {
   return { members: [], expenses: [], currencySymbol: '€' }
@@ -92,17 +92,31 @@ function extractHash(pasted: string): string {
   return hashIndex !== -1 ? trimmed.slice(hashIndex + 1) : trimmed
 }
 
+export interface MergePreview {
+  incoming: GroupState
+  matches: MatchSuggestion[]
+}
+
 /**
- * Merges a pasted BeeSplit link (or bare hash) into the current group,
- * combining people and expenses instead of overwriting what's already here.
+ * Decodes a pasted BeeSplit link (or bare hash) and suggests, for each
+ * person in it, whether they're likely an existing person here — for the
+ * caller to show as an editable review before anything is actually merged.
  */
-function mergeFromLink(pasted: string): MergeResult {
+function previewMerge(pasted: string): MergePreview {
   const incoming = decodeHash(extractHash(pasted))
   if (!incoming) {
     throw new Error("That doesn't look like a valid BeeSplit link.")
   }
+  return { incoming, matches: buildMatchSuggestions(state, incoming) }
+}
 
-  const result = mergeStates(state, incoming)
+/**
+ * Merges a previewed link into the current group using a caller-confirmed
+ * mapping of incoming member id -> existing local member id (or NEW_PERSON),
+ * combining people and expenses instead of overwriting what's already here.
+ */
+function confirmMerge(incoming: GroupState, mapping: Record<string, string>): MergeResult {
+  const result = applyMerge(state, incoming, mapping)
   state.members = result.state.members
   state.expenses = result.state.expenses
   return result
@@ -152,6 +166,7 @@ export function useGroupData() {
     updateExpense,
     removeExpense,
     setCurrencySymbol,
-    mergeFromLink,
+    previewMerge,
+    confirmMerge,
   }
 }

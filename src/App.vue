@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import MembersPanel from './components/MembersPanel.vue'
 import ExpenseForm from './components/ExpenseForm.vue'
 import ExpenseList from './components/ExpenseList.vue'
 import BalancesPanel from './components/BalancesPanel.vue'
-import { useGroupData } from './composables/useGroupData'
+import { useGroupData, type MergePreview } from './composables/useGroupData'
+import { NEW_PERSON } from './utils/merge'
 import type { Expense } from './types'
 
-const { currencySymbol, setCurrencySymbol, mergeFromLink } = useGroupData()
+const { members, currencySymbol, setCurrencySymbol, previewMerge, confirmMerge } = useGroupData()
 
 type Tab = 'expenses' | 'people' | 'balances'
 const tab = ref<Tab>('expenses')
@@ -18,6 +19,8 @@ const showMergeForm = ref(false)
 const mergeInput = ref('')
 const mergeMessage = ref('')
 const mergeError = ref('')
+const mergePreview = ref<MergePreview | null>(null)
+const matchSelections = reactive<Record<string, string>>({})
 
 function editExpense(expense: Expense) {
   editingExpense.value = expense
@@ -39,21 +42,48 @@ async function copyShareLink() {
   }
 }
 
-function handleMerge() {
+function handlePreviewMerge() {
   mergeError.value = ''
   mergeMessage.value = ''
   if (!mergeInput.value.trim()) return
 
   try {
-    const { addedMembers, addedExpenses } = mergeFromLink(mergeInput.value)
-    const parts = []
-    if (addedMembers > 0) parts.push(`${addedMembers} new ${addedMembers === 1 ? 'person' : 'people'}`)
-    if (addedExpenses > 0) parts.push(`${addedExpenses} new ${addedExpenses === 1 ? 'expense' : 'expenses'}`)
-    mergeMessage.value = parts.length > 0 ? `Merged in ${parts.join(' and ')}.` : 'Nothing new to merge in.'
-    mergeInput.value = ''
+    const preview = previewMerge(mergeInput.value)
+
+    // Nothing to review (e.g. an empty group) — just merge it in directly.
+    if (preview.matches.length === 0) {
+      const { addedExpenses } = confirmMerge(preview.incoming, {})
+      mergeMessage.value =
+        addedExpenses > 0 ? `Merged in ${addedExpenses} new expense(s).` : 'Nothing new to merge in.'
+      mergeInput.value = ''
+      return
+    }
+
+    for (const key of Object.keys(matchSelections)) delete matchSelections[key]
+    for (const match of preview.matches) {
+      matchSelections[match.incomingId] = match.suggestedId ?? NEW_PERSON
+    }
+    mergePreview.value = preview
   } catch (e) {
-    mergeError.value = e instanceof Error ? e.message : 'Could not merge that link.'
+    mergeError.value = e instanceof Error ? e.message : 'Could not read that link.'
   }
+}
+
+function confirmMergeReview() {
+  if (!mergePreview.value) return
+  const { addedMembers, addedExpenses } = confirmMerge(mergePreview.value.incoming, { ...matchSelections })
+
+  const parts = []
+  if (addedMembers > 0) parts.push(`${addedMembers} new ${addedMembers === 1 ? 'person' : 'people'}`)
+  if (addedExpenses > 0) parts.push(`${addedExpenses} new ${addedExpenses === 1 ? 'expense' : 'expenses'}`)
+  mergeMessage.value = parts.length > 0 ? `Merged in ${parts.join(' and ')}.` : 'Nothing new to merge in.'
+
+  mergePreview.value = null
+  mergeInput.value = ''
+}
+
+function cancelMergeReview() {
+  mergePreview.value = null
 }
 </script>
 
@@ -81,14 +111,37 @@ function handleMerge() {
       </div>
     </header>
 
-    <form v-if="showMergeForm" class="merge-form" @submit.prevent="handleMerge">
+    <form
+      v-if="showMergeForm && !mergePreview"
+      class="merge-form"
+      @submit.prevent="handlePreviewMerge"
+    >
       <input
         v-model="mergeInput"
         type="text"
         placeholder="Paste someone else's BeeSplit link here"
       />
-      <button type="submit" class="primary">Merge</button>
+      <button type="submit" class="primary">Review</button>
     </form>
+
+    <div v-if="mergePreview" class="merge-review">
+      <p class="merge-review-title">
+        Match people from that link to who they already are here, or add them as new:
+      </p>
+      <div v-for="match in mergePreview.matches" :key="match.incomingId" class="match-row">
+        <span class="match-name">{{ match.incomingName }}</span>
+        <span class="match-arrow">is</span>
+        <select v-model="matchSelections[match.incomingId]">
+          <option :value="NEW_PERSON">➕ a new person</option>
+          <option v-for="m in members" :key="m.id" :value="m.id">{{ m.name }}</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button type="button" class="primary" @click="confirmMergeReview">Confirm merge</button>
+        <button type="button" @click="cancelMergeReview">Cancel</button>
+      </div>
+    </div>
+
     <p v-if="mergeMessage" class="merge-feedback success">{{ mergeMessage }}</p>
     <p v-if="mergeError" class="merge-feedback error">{{ mergeError }}</p>
 
@@ -201,6 +254,53 @@ function handleMerge() {
 
 .merge-feedback.error {
   color: var(--danger);
+}
+
+.merge-review {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: var(--shadow);
+}
+
+.merge-review-title {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.match-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.match-name {
+  font-weight: 600;
+  min-width: 5rem;
+}
+
+.match-arrow {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.match-row select {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.merge-review .actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.merge-review .actions button {
+  min-height: 44px;
 }
 
 .tabs {
