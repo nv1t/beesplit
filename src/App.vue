@@ -12,6 +12,7 @@ const { currencySymbol, setCurrencySymbol } = useGroupData()
 type Tab = 'expenses' | 'people' | 'balances'
 const tab = ref<Tab>('expenses')
 const editingExpense = ref<Expense | null>(null)
+const linkCopied = ref(false)
 
 function editExpense(expense: Expense) {
   editingExpense.value = expense
@@ -21,21 +22,37 @@ function editExpense(expense: Expense) {
 function stopEditing() {
   editingExpense.value = null
 }
+
+async function copyShareLink() {
+  try {
+    await navigator.clipboard.writeText(window.location.href)
+    linkCopied.value = true
+    setTimeout(() => (linkCopied.value = false), 2000)
+  } catch (e) {
+    console.warn('Could not copy link automatically.', e)
+    prompt('Copy this link to save or share your data:', window.location.href)
+  }
+}
 </script>
 
 <template>
   <div class="app">
     <header class="app-header">
       <h1>🐝 BeeSplit</h1>
-      <div class="currency-setting">
-        <label for="currency">Currency</label>
-        <input
-          id="currency"
-          type="text"
-          maxlength="3"
-          :value="currencySymbol"
-          @change="setCurrencySymbol(($event.target as HTMLInputElement).value)"
-        />
+      <div class="header-controls">
+        <div class="currency-setting">
+          <label for="currency">Currency</label>
+          <input
+            id="currency"
+            type="text"
+            maxlength="3"
+            :value="currencySymbol"
+            @change="setCurrencySymbol(($event.target as HTMLInputElement).value)"
+          />
+        </div>
+        <button type="button" class="share-btn" @click="copyShareLink">
+          {{ linkCopied ? 'Link copied ✓' : '🔗 Copy link' }}
+        </button>
       </div>
     </header>
 
@@ -61,7 +78,9 @@ function stopEditing() {
     </main>
 
     <footer class="app-footer">
-      Data is stored only in this browser (localStorage) — nothing leaves your device.
+      Data is stored in this browser (localStorage) and encoded into this page's URL —
+      bookmark or share the link to save or continue your group from anywhere.
+      Nothing is sent to a server.
     </footer>
   </div>
 </template>
@@ -94,6 +113,13 @@ function stopEditing() {
   color: var(--accent);
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .currency-setting {
   display: flex;
   align-items: center;
@@ -105,6 +131,13 @@ function stopEditing() {
 .currency-setting input {
   width: 3rem;
   text-align: center;
+}
+
+.share-btn {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.7rem;
+  min-height: 36px;
+  white-space: nowrap;
 }
 
 .tabs {

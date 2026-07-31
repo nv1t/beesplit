@@ -1,4 +1,5 @@
 import { reactive, computed, watch } from 'vue'
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 import type { Member, Expense } from '../types'
 import { simplifyDebts } from '../utils/settle'
 
@@ -10,24 +11,50 @@ interface StoredState {
   currencySymbol: string
 }
 
-function loadState(): StoredState {
+function defaultState(): StoredState {
+  return { members: [], expenses: [], currencySymbol: '$' }
+}
+
+function readFromHash(): StoredState | null {
+  const hash = window.location.hash.slice(1)
+  if (!hash) return null
+  try {
+    const json = decompressFromEncodedURIComponent(hash)
+    if (!json) return null
+    return { ...defaultState(), ...JSON.parse(json) }
+  } catch (e) {
+    console.warn('Failed to read data from URL, ignoring it.', e)
+    return null
+  }
+}
+
+function readFromStorage(): StoredState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return { currencySymbol: '$', ...JSON.parse(raw) }
+    if (raw) return { ...defaultState(), ...JSON.parse(raw) }
   } catch (e) {
     console.warn('Failed to load saved data, starting fresh.', e)
   }
-  return { members: [], expenses: [], currencySymbol: '$' }
+  return null
+}
+
+function loadState(): StoredState {
+  return readFromHash() ?? readFromStorage() ?? defaultState()
 }
 
 const state = reactive<StoredState>(loadState())
 
+// immediate: true also persists a shared link's data to localStorage right
+// away, so it survives a plain reload (i.e. once the hash is gone) on this
+// same browser, and normalizes the URL hash to reflect the loaded state.
 watch(
   state,
   (value) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
+    const encoded = compressToEncodedURIComponent(JSON.stringify(value))
+    history.replaceState(null, '', `#${encoded}`)
   },
-  { deep: true },
+  { deep: true, immediate: true },
 )
 
 function makeId(): string {
