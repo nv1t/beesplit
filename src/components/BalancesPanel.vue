@@ -42,6 +42,16 @@ const balanceRows = computed(() =>
           <span class="settlement-amount">{{ currencySymbol }}{{ formatAmount(s.amount) }}</span>
         </li>
       </ul>
+
+      <a
+        class="kofi-row"
+        href="https://ko-fi.com/nuitg"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <strong>You</strong> kind of owe <strong>BeeSplit</strong> a coffee too 😄
+        <span class="settlement-amount">☕</span>
+      </a>
     </template>
   </section>
 </template>
@@ -114,6 +124,26 @@ h3 {
 
 .settlement-amount {
   font-weight: 600;
+}
+
+.kofi-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  margin-top: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.kofi-row:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .empty {

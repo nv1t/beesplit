@@ -61,11 +61,7 @@ function stopEditing() {
     </main>
 
     <footer class="app-footer">
-      <p>Data is stored only in this browser (localStorage) — nothing leaves your device.</p>
-      <p>
-        Found this useful?
-        <a href="https://ko-fi.com/nuitg" target="_blank" rel="noopener noreferrer">Buy me a coffee ☕</a>
-      </p>
+      Data is stored only in this browser (localStorage) — nothing leaves your device.
     </footer>
   </div>
 </template>
@@ -149,18 +145,5 @@ function stopEditing() {
   text-align: center;
   font-size: 0.75rem;
   color: var(--text-muted);
-}
-
-.app-footer p {
-  margin: 0.25rem 0;
-}
-
-.app-footer a {
-  color: var(--text-muted);
-  text-decoration: underline;
-}
-
-.app-footer a:hover {
-  color: var(--accent);
 }
 </style>
