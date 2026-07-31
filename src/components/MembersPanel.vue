@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useGroupData } from '../composables/useGroupData'
 import Avatar from './Avatar.vue'
 
+const { t } = useI18n()
 const { members, addMember, renameMember, removeMember } = useGroupData()
 
 const newName = ref('')
@@ -31,17 +33,17 @@ function handleRemove(id: string) {
   try {
     removeMember(id)
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Could not remove member.'
+    error.value = e instanceof Error ? e.message : t('people.removeErrorGeneric')
   }
 }
 </script>
 
 <template>
   <section class="panel">
-    <h2>People</h2>
+    <h2>{{ $t('people.heading') }}</h2>
     <form class="add-row" @submit.prevent="handleAdd">
-      <input v-model="newName" type="text" placeholder="Add a person's name" />
-      <button type="submit">Add</button>
+      <input v-model="newName" type="text" :placeholder="$t('people.addPlaceholder')" />
+      <button type="submit">{{ $t('people.add') }}</button>
     </form>
 
     <p v-if="error" class="error">{{ error }}</p>
@@ -61,11 +63,11 @@ function handleRemove(id: string) {
         </template>
         <template v-else>
           <span class="member-name" @click="startEdit(member.id, member.name)">{{ member.name }}</span>
-          <button class="icon-btn danger" title="Remove" @click="handleRemove(member.id)">✕</button>
+          <button class="icon-btn danger" :title="$t('people.remove')" @click="handleRemove(member.id)">✕</button>
         </template>
       </li>
     </ul>
-    <p v-else class="empty">Add everyone who's part of the group.</p>
+    <p v-else class="empty">{{ $t('people.empty') }}</p>
   </section>
 </template>
 

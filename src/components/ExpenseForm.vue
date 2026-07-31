@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useGroupData } from '../composables/useGroupData'
 import Avatar from './Avatar.vue'
 import type { Expense } from '../types'
@@ -12,6 +13,7 @@ const emit = defineEmits<{
   done: []
 }>()
 
+const { t } = useI18n()
 const { members, addExpense, updateExpense } = useGroupData()
 
 const description = ref('')
@@ -59,19 +61,19 @@ function handleSubmit() {
   const parsedAmount = parseFloat(amount.value)
 
   if (!description.value.trim()) {
-    error.value = 'Add a description.'
+    error.value = t('expenseForm.errorDescription')
     return
   }
   if (!parsedAmount || parsedAmount <= 0) {
-    error.value = 'Enter an amount greater than 0.'
+    error.value = t('expenseForm.errorAmount')
     return
   }
   if (!paidBy.value) {
-    error.value = 'Choose who paid.'
+    error.value = t('expenseForm.errorPaidBy')
     return
   }
   if (participants.value.length === 0) {
-    error.value = 'Select at least one person to split with.'
+    error.value = t('expenseForm.errorParticipants')
     return
   }
 
@@ -101,27 +103,27 @@ function handleCancel() {
 
 <template>
   <form class="expense-form" @submit.prevent="handleSubmit">
-    <p v-if="members.length === 0" class="empty">Add people to the group first.</p>
+    <p v-if="members.length === 0" class="empty">{{ $t('expenseForm.needPeople') }}</p>
 
     <template v-else>
       <div class="field">
-        <label>Description</label>
-        <input v-model="description" type="text" placeholder="e.g. Dinner, Groceries, Taxi" />
+        <label>{{ $t('expenseForm.description') }}</label>
+        <input v-model="description" type="text" :placeholder="$t('expenseForm.descriptionPlaceholder')" />
       </div>
 
       <div class="row">
         <div class="field">
-          <label>Amount</label>
+          <label>{{ $t('expenseForm.amount') }}</label>
           <input v-model="amount" type="number" step="0.01" min="0" placeholder="0.00" />
         </div>
         <div class="field">
-          <label>Date</label>
+          <label>{{ $t('expenseForm.date') }}</label>
           <input v-model="date" type="date" />
         </div>
       </div>
 
       <div class="field">
-        <label>Paid by</label>
+        <label>{{ $t('expenseForm.paidBy') }}</label>
         <select v-model="paidBy">
           <option v-for="m in members" :key="m.id" :value="m.id">{{ m.name }}</option>
         </select>
@@ -129,9 +131,9 @@ function handleCancel() {
 
       <div class="field">
         <div class="split-header">
-          <label>Split between</label>
+          <label>{{ $t('expenseForm.splitBetween') }}</label>
           <button type="button" class="link-btn" @click="toggleAll">
-            {{ allSelected ? 'Clear all' : 'Select all' }}
+            {{ allSelected ? $t('expenseForm.clearAll') : $t('expenseForm.selectAll') }}
           </button>
         </div>
         <div class="participant-grid">
@@ -146,8 +148,10 @@ function handleCancel() {
       <p v-if="error" class="error">{{ error }}</p>
 
       <div class="actions">
-        <button type="submit" class="primary">{{ editingExpense ? 'Save changes' : 'Add expense' }}</button>
-        <button type="button" @click="handleCancel">Cancel</button>
+        <button type="submit" class="primary">
+          {{ editingExpense ? $t('expenseForm.save') : $t('expenseForm.add') }}
+        </button>
+        <button type="button" @click="handleCancel">{{ $t('expenseForm.cancel') }}</button>
       </div>
     </template>
   </form>

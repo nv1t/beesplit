@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
+import { useI18n } from 'vue-i18n'
 import MembersPanel from './components/MembersPanel.vue'
 import ExpenseForm from './components/ExpenseForm.vue'
 import ExpenseList from './components/ExpenseList.vue'
@@ -10,6 +11,7 @@ import { useGroupData, type MergePreview } from './composables/useGroupData'
 import { NEW_PERSON } from './utils/merge'
 import type { Expense } from './types'
 
+const { t } = useI18n()
 const { members, currencySymbol, setCurrencySymbol, previewMerge, confirmMerge } = useGroupData()
 
 type Tab = 'expenses' | 'people' | 'balances'
@@ -47,8 +49,23 @@ async function copyShareLink() {
     setTimeout(() => (linkCopied.value = false), 2000)
   } catch (e) {
     console.warn('Could not copy link automatically.', e)
-    prompt('Copy this link to save or share your data:', window.location.href)
+    prompt(t('app.copyPromptTitle'), window.location.href)
   }
+}
+
+function describeMergeResult(addedMembers: number, addedExpenses: number): string {
+  const parts: string[] = []
+  if (addedMembers > 0) {
+    parts.push(t(addedMembers === 1 ? 'merge.newPersonSingular' : 'merge.newPeoplePlural', { count: addedMembers }))
+  }
+  if (addedExpenses > 0) {
+    parts.push(
+      t(addedExpenses === 1 ? 'merge.newExpenseSingular' : 'merge.newExpensesPlural', { count: addedExpenses }),
+    )
+  }
+  return parts.length > 0
+    ? t('merge.mergedPrefix', { parts: parts.join(` ${t('merge.and')} `) })
+    : t('merge.nothingNew')
 }
 
 function handlePreviewMerge() {
@@ -62,8 +79,7 @@ function handlePreviewMerge() {
     // Nothing to review (e.g. an empty group) — just merge it in directly.
     if (preview.matches.length === 0) {
       const { addedExpenses } = confirmMerge(preview.incoming, {})
-      mergeMessage.value =
-        addedExpenses > 0 ? `Merged in ${addedExpenses} new expense(s).` : 'Nothing new to merge in.'
+      mergeMessage.value = describeMergeResult(0, addedExpenses)
       mergeInput.value = ''
       return
     }
@@ -74,18 +90,14 @@ function handlePreviewMerge() {
     }
     mergePreview.value = preview
   } catch (e) {
-    mergeError.value = e instanceof Error ? e.message : 'Could not read that link.'
+    mergeError.value = e instanceof Error ? e.message : t('merge.readError')
   }
 }
 
 function confirmMergeReview() {
   if (!mergePreview.value) return
   const { addedMembers, addedExpenses } = confirmMerge(mergePreview.value.incoming, { ...matchSelections })
-
-  const parts = []
-  if (addedMembers > 0) parts.push(`${addedMembers} new ${addedMembers === 1 ? 'person' : 'people'}`)
-  if (addedExpenses > 0) parts.push(`${addedExpenses} new ${addedExpenses === 1 ? 'expense' : 'expenses'}`)
-  mergeMessage.value = parts.length > 0 ? `Merged in ${parts.join(' and ')}.` : 'Nothing new to merge in.'
+  mergeMessage.value = describeMergeResult(addedMembers, addedExpenses)
 
   mergePreview.value = null
   mergeInput.value = ''
@@ -102,7 +114,7 @@ function cancelMergeReview() {
       <h1>🐝 BeeSplit</h1>
       <div class="header-controls">
         <div class="currency-setting">
-          <label for="currency">Currency</label>
+          <label for="currency">{{ $t('app.currencyLabel') }}</label>
           <input
             id="currency"
             type="text"
@@ -112,10 +124,10 @@ function cancelMergeReview() {
           />
         </div>
         <button type="button" class="share-btn" @click="copyShareLink">
-          {{ linkCopied ? 'Link copied ✓' : '🔗 Copy link' }}
+          {{ linkCopied ? $t('app.linkCopied') : $t('app.copyLink') }}
         </button>
         <button type="button" class="share-btn" @click="showMergeForm = !showMergeForm">
-          🔀 Merge a link
+          {{ $t('app.mergeLinkButton') }}
         </button>
       </div>
     </header>
@@ -128,29 +140,29 @@ function cancelMergeReview() {
       <input
         v-model="mergeInput"
         type="text"
-        placeholder="Paste someone else's BeeSplit link here"
+        :placeholder="$t('merge.placeholder')"
       />
-      <button type="submit" class="primary">Review</button>
+      <button type="submit" class="primary">{{ $t('merge.review') }}</button>
     </form>
 
     <div v-if="mergePreview" class="merge-review">
       <p class="merge-review-title">
-        Match people from that link to who they already are here, or add them as new:
+        {{ $t('merge.matchTitle') }}
       </p>
       <div v-for="match in mergePreview.matches" :key="match.incomingId" class="match-row">
         <span class="match-name">
           <Avatar :id="match.incomingId" :name="match.incomingName" size="sm" />
           {{ match.incomingName }}
         </span>
-        <span class="match-arrow">is</span>
+        <span class="match-arrow">{{ $t('merge.is') }}</span>
         <select v-model="matchSelections[match.incomingId]">
-          <option :value="NEW_PERSON">➕ a new person</option>
+          <option :value="NEW_PERSON">{{ $t('merge.newPerson') }}</option>
           <option v-for="m in members" :key="m.id" :value="m.id">{{ m.name }}</option>
         </select>
       </div>
       <div class="actions">
-        <button type="button" class="primary" @click="confirmMergeReview">Confirm merge</button>
-        <button type="button" @click="cancelMergeReview">Cancel</button>
+        <button type="button" class="primary" @click="confirmMergeReview">{{ $t('merge.confirm') }}</button>
+        <button type="button" @click="cancelMergeReview">{{ $t('merge.cancel') }}</button>
       </div>
     </div>
 
@@ -158,15 +170,15 @@ function cancelMergeReview() {
     <p v-if="mergeError" class="merge-feedback error">{{ mergeError }}</p>
 
     <nav class="tabs">
-      <button :class="{ active: tab === 'expenses' }" @click="tab = 'expenses'">Expenses</button>
-      <button :class="{ active: tab === 'people' }" @click="tab = 'people'">People</button>
-      <button :class="{ active: tab === 'balances' }" @click="tab = 'balances'">Balances</button>
+      <button :class="{ active: tab === 'expenses' }" @click="tab = 'expenses'">{{ $t('tabs.expenses') }}</button>
+      <button :class="{ active: tab === 'people' }" @click="tab = 'people'">{{ $t('tabs.people') }}</button>
+      <button :class="{ active: tab === 'balances' }" @click="tab = 'balances'">{{ $t('tabs.balances') }}</button>
     </nav>
 
     <main class="content">
       <section v-show="tab === 'expenses'" class="expenses-tab">
         <button type="button" class="primary add-expense-btn" @click="openAddExpense">
-          + Add expense
+          {{ $t('expenseList.addButton') }}
         </button>
         <ExpenseList @edit="editExpense" />
       </section>
@@ -182,19 +194,16 @@ function cancelMergeReview() {
 
     <Modal
       v-if="showExpenseModal"
-      :title="editingExpense ? 'Edit expense' : 'Add an expense'"
+      :title="editingExpense ? $t('expenseForm.editTitle') : $t('expenseForm.addTitle')"
       @close="closeExpenseModal"
     >
       <ExpenseForm :editing-expense="editingExpense" @done="closeExpenseModal" />
     </Modal>
 
     <footer class="app-footer">
-      All group data lives only in this page's URL — nothing is saved to this
-      device or synced anywhere. Bookmark or copy the link to keep your group;
-      closing this tab without saving the link will lose it. This site uses
+      {{ $t('footer.before') }}
       <a href="https://www.goatcounter.com/" target="_blank" rel="noopener noreferrer">
-        GoatCounter</a>, a privacy-friendly, cookie-less analytics tool, for anonymous
-      page-view counts only — never your expense data.
+        {{ $t('footer.goatcounter') }}</a>{{ $t('footer.after') }}
     </footer>
   </div>
 </template>

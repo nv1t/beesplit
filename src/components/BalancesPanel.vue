@@ -19,10 +19,12 @@ const balanceRows = computed(() =>
 
 <template>
   <section class="panel">
-    <h2>Balances</h2>
-    <p v-if="members.length === 0" class="empty">Add people and expenses to see balances.</p>
+    <h2>{{ $t('balances.heading') }}</h2>
+    <p v-if="members.length === 0" class="empty">{{ $t('balances.empty') }}</p>
     <template v-else>
-      <div class="total">Total spent: <strong>{{ currencySymbol }}{{ formatAmount(totalSpent) }}</strong></div>
+      <div class="total">
+        {{ $t('balances.totalSpent') }} <strong>{{ currencySymbol }}{{ formatAmount(totalSpent) }}</strong>
+      </div>
 
       <ul class="balance-list">
         <li v-for="row in balanceRows" :key="row.id" class="balance-row">
@@ -31,21 +33,25 @@ const balanceRows = computed(() =>
             {{ row.name }}
           </span>
           <span :class="['amount', row.amount > 0.005 ? 'positive' : row.amount < -0.005 ? 'negative' : '']">
-            <template v-if="row.amount > 0.005">is owed {{ currencySymbol }}{{ formatAmount(row.amount) }}</template>
-            <template v-else-if="row.amount < -0.005">owes {{ currencySymbol }}{{ formatAmount(-row.amount) }}</template>
-            <template v-else>settled up</template>
+            <template v-if="row.amount > 0.005">
+              {{ $t('balances.isOwed', { amount: currencySymbol + formatAmount(row.amount) }) }}
+            </template>
+            <template v-else-if="row.amount < -0.005">
+              {{ $t('balances.owes', { amount: currencySymbol + formatAmount(-row.amount) }) }}
+            </template>
+            <template v-else>{{ $t('balances.settledUp') }}</template>
           </span>
         </li>
       </ul>
 
-      <h3>Suggested settlements</h3>
-      <p v-if="settlements.length === 0" class="empty">Everyone is settled up 🎉</p>
+      <h3>{{ $t('balances.suggestedSettlements') }}</h3>
+      <p v-if="settlements.length === 0" class="empty">{{ $t('balances.allSettled') }}</p>
       <ul v-else class="settlement-list">
         <li v-for="(s, idx) in settlements" :key="idx" class="settlement-row">
           <span class="who">
             <Avatar :id="s.from" :name="memberName(s.from)" size="sm" />
             <strong>{{ memberName(s.from) }}</strong>
-            pays
+            {{ $t('balances.pays') }}
             <Avatar :id="s.to" :name="memberName(s.to)" size="sm" />
             <strong>{{ memberName(s.to) }}</strong>
           </span>
@@ -59,7 +65,7 @@ const balanceRows = computed(() =>
         target="_blank"
         rel="noopener noreferrer"
       >
-        <strong>You</strong> kind of owe <strong>BeeSplit</strong> a coffee too 😄
+        {{ $t('balances.kofiText') }}
         <span class="settlement-amount">☕</span>
       </a>
     </template>

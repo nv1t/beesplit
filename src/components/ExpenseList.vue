@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useGroupData } from '../composables/useGroupData'
 import { formatAmount } from '../utils/format'
 import Avatar from './Avatar.vue'
@@ -9,6 +10,7 @@ const emit = defineEmits<{
   edit: [expense: Expense]
 }>()
 
+const { t } = useI18n()
 const { members, expenses, removeExpense, currencySymbol } = useGroupData()
 
 const sortedExpenses = computed(() =>
@@ -20,21 +22,21 @@ function memberName(id: string): string {
 }
 
 function handleRemove(id: string) {
-  if (confirm('Delete this expense?')) removeExpense(id)
+  if (confirm(t('expenseList.confirmDelete'))) removeExpense(id)
 }
 </script>
 
 <template>
   <section class="panel">
-    <h2>Expenses</h2>
-    <p v-if="sortedExpenses.length === 0" class="empty">No expenses yet.</p>
+    <h2>{{ $t('expenseList.heading') }}</h2>
+    <p v-if="sortedExpenses.length === 0" class="empty">{{ $t('expenseList.empty') }}</p>
     <ul v-else class="expense-list">
       <li v-for="expense in sortedExpenses" :key="expense.id" class="expense-row">
         <Avatar :id="expense.paidBy" :name="memberName(expense.paidBy)" />
         <div class="expense-main">
           <div class="expense-title">{{ expense.description }}</div>
           <div class="expense-meta">
-            <span class="paid-by">{{ memberName(expense.paidBy) }} paid</span>
+            <span class="paid-by">{{ $t('expenseList.paidLabel', { name: memberName(expense.paidBy) }) }}</span>
             <span class="avatar-stack">
               <Avatar
                 v-for="pid in expense.participants"
@@ -50,8 +52,8 @@ function handleRemove(id: string) {
         <div class="expense-trailing">
           <div class="expense-amount">{{ currencySymbol }}{{ formatAmount(expense.amount) }}</div>
           <div class="expense-actions">
-            <button class="icon-btn" title="Edit" @click="emit('edit', expense)">✎</button>
-            <button class="icon-btn danger" title="Delete" @click="handleRemove(expense.id)">✕</button>
+            <button class="icon-btn" :title="$t('expenseList.editAction')" @click="emit('edit', expense)">✎</button>
+            <button class="icon-btn danger" :title="$t('expenseList.deleteAction')" @click="handleRemove(expense.id)">✕</button>
           </div>
         </div>
       </li>

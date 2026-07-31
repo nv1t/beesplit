@@ -3,6 +3,9 @@ import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from
 import type { GroupState, Expense } from '../types'
 import { simplifyDebts } from '../utils/settle'
 import { buildMatchSuggestions, applyMerge, type MatchSuggestion, type MergeResult } from '../utils/merge'
+import { i18n } from '../i18n'
+
+const t = i18n.global.t
 
 function defaultState(): GroupState {
   return { members: [], expenses: [], currencySymbol: '€' }
@@ -64,7 +67,7 @@ function removeMember(id: string) {
     (e) => e.paidBy === id || e.participants.includes(id),
   )
   if (usedInExpense) {
-    throw new Error('Cannot remove a member who is involved in existing expenses.')
+    throw new Error(t('people.removeError'))
   }
   state.members = state.members.filter((m) => m.id !== id)
 }
@@ -105,7 +108,7 @@ export interface MergePreview {
 function previewMerge(pasted: string): MergePreview {
   const incoming = decodeHash(extractHash(pasted))
   if (!incoming) {
-    throw new Error("That doesn't look like a valid BeeSplit link.")
+    throw new Error(t('merge.invalidLink'))
   }
   return { incoming, matches: buildMatchSuggestions(state, incoming) }
 }
