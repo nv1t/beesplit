@@ -1,8 +1,9 @@
 # 🐝 BeeSplit
 
-A frontend-only expense splitter for groups. No backend, no accounts, no
-tracking, and no local storage — the entire group's data is compressed and
-encoded directly into the page's URL.
+A frontend-only expense splitter for groups. No backend, no accounts, and no
+local storage — the entire group's data is compressed and encoded directly
+into the page's URL. The site uses privacy-friendly, cookie-less analytics
+(GoatCounter) for anonymous page-view counts only.
 
 **Live app:** https://nv1t.github.io/beesplit/
 
@@ -20,7 +21,8 @@ encoded directly into the page's URL.
 - Paste someone else's BeeSplit link to merge their people and expenses into
   yours — everyone converges on one shared "truth" instead of overwriting
   each other
-- Works offline once loaded; nothing is sent to a server
+- Works offline once loaded; the only network call is an anonymous
+  GoatCounter page-view ping, no expense data is ever sent anywhere
 
 ## Tech stack
 
@@ -68,8 +70,13 @@ page (`username.github.io/repo-name/`) or a custom domain.
 ## Data & privacy
 
 All group and expense data lives only in the page's URL — nothing is written
-to disk and nothing is sent to a server. Closing the tab without saving
-(bookmarking, copying, or sharing) the link loses the data. Opening a
+to disk and no expense data is ever sent to a server. Closing the tab without
+saving (bookmarking, copying, or sharing) the link loses the data. Opening a
 different BeeSplit link always starts from exactly what that link encodes;
 use the "Merge a link" button to combine it with what you already have open
 instead of replacing it.
+
+The page loads [GoatCounter](https://www.goatcounter.com/) for anonymous,
+cookie-less page-view counts (`nv1t.goatcounter.com`). It only ever sees the
+page URL/referrer, never any group or expense data — that never leaves the
+URL hash.

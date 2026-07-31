@@ -114,9 +114,12 @@ function handleMerge() {
     </main>
 
     <footer class="app-footer">
-      All data lives only in this page's URL — nothing is saved to this device or
-      sent to a server. Bookmark or copy the link to keep your group; closing this
-      tab without saving the link will lose it.
+      All group data lives only in this page's URL — nothing is saved to this
+      device or synced anywhere. Bookmark or copy the link to keep your group;
+      closing this tab without saving the link will lose it. This site uses
+      <a href="https://www.goatcounter.com/" target="_blank" rel="noopener noreferrer">
+        GoatCounter</a>, a privacy-friendly, cookie-less analytics tool, for anonymous
+      page-view counts only — never your expense data.
     </footer>
   </div>
 </template>
@@ -238,5 +241,14 @@ function handleMerge() {
   text-align: center;
   font-size: 0.75rem;
   color: var(--text-muted);
+}
+
+.app-footer a {
+  color: var(--text-muted);
+  text-decoration: underline;
+}
+
+.app-footer a:hover {
+  color: var(--accent);
 }
 </style>
