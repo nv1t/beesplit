@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useGroupData } from '../composables/useGroupData'
 import { formatAmount } from '../utils/format'
+import Avatar from './Avatar.vue'
 
 const { members, balances, settlements, totalSpent, currencySymbol } = useGroupData()
 
@@ -25,7 +26,10 @@ const balanceRows = computed(() =>
 
       <ul class="balance-list">
         <li v-for="row in balanceRows" :key="row.id" class="balance-row">
-          <span>{{ row.name }}</span>
+          <span class="who">
+            <Avatar :id="row.id" :name="row.name" size="sm" />
+            {{ row.name }}
+          </span>
           <span :class="['amount', row.amount > 0.005 ? 'positive' : row.amount < -0.005 ? 'negative' : '']">
             <template v-if="row.amount > 0.005">is owed {{ currencySymbol }}{{ formatAmount(row.amount) }}</template>
             <template v-else-if="row.amount < -0.005">owes {{ currencySymbol }}{{ formatAmount(-row.amount) }}</template>
@@ -38,7 +42,13 @@ const balanceRows = computed(() =>
       <p v-if="settlements.length === 0" class="empty">Everyone is settled up 🎉</p>
       <ul v-else class="settlement-list">
         <li v-for="(s, idx) in settlements" :key="idx" class="settlement-row">
-          <strong>{{ memberName(s.from) }}</strong> pays <strong>{{ memberName(s.to) }}</strong>
+          <span class="who">
+            <Avatar :id="s.from" :name="memberName(s.from)" size="sm" />
+            <strong>{{ memberName(s.from) }}</strong>
+            pays
+            <Avatar :id="s.to" :name="memberName(s.to)" size="sm" />
+            <strong>{{ memberName(s.to) }}</strong>
+          </span>
           <span class="settlement-amount">{{ currencySymbol }}{{ formatAmount(s.amount) }}</span>
         </li>
       </ul>
@@ -94,11 +104,19 @@ h3 {
 .balance-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   flex-wrap: wrap;
   gap: 0.25rem 0.75rem;
   padding: 0.5rem 0.75rem;
   background: var(--surface-alt);
   border-radius: 8px;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .amount.positive {
@@ -114,6 +132,7 @@ h3 {
 .settlement-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   flex-wrap: wrap;
   gap: 0.25rem 0.75rem;
   padding: 0.5rem 0.75rem;

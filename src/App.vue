@@ -4,6 +4,8 @@ import MembersPanel from './components/MembersPanel.vue'
 import ExpenseForm from './components/ExpenseForm.vue'
 import ExpenseList from './components/ExpenseList.vue'
 import BalancesPanel from './components/BalancesPanel.vue'
+import Modal from './components/Modal.vue'
+import Avatar from './components/Avatar.vue'
 import { useGroupData, type MergePreview } from './composables/useGroupData'
 import { NEW_PERSON } from './utils/merge'
 import type { Expense } from './types'
@@ -13,6 +15,7 @@ const { members, currencySymbol, setCurrencySymbol, previewMerge, confirmMerge }
 type Tab = 'expenses' | 'people' | 'balances'
 const tab = ref<Tab>('expenses')
 const editingExpense = ref<Expense | null>(null)
+const showExpenseModal = ref(false)
 const linkCopied = ref(false)
 
 const showMergeForm = ref(false)
@@ -22,12 +25,18 @@ const mergeError = ref('')
 const mergePreview = ref<MergePreview | null>(null)
 const matchSelections = reactive<Record<string, string>>({})
 
-function editExpense(expense: Expense) {
-  editingExpense.value = expense
-  tab.value = 'expenses'
+function openAddExpense() {
+  editingExpense.value = null
+  showExpenseModal.value = true
 }
 
-function stopEditing() {
+function editExpense(expense: Expense) {
+  editingExpense.value = expense
+  showExpenseModal.value = true
+}
+
+function closeExpenseModal() {
+  showExpenseModal.value = false
   editingExpense.value = null
 }
 
@@ -129,7 +138,10 @@ function cancelMergeReview() {
         Match people from that link to who they already are here, or add them as new:
       </p>
       <div v-for="match in mergePreview.matches" :key="match.incomingId" class="match-row">
-        <span class="match-name">{{ match.incomingName }}</span>
+        <span class="match-name">
+          <Avatar :id="match.incomingId" :name="match.incomingName" size="sm" />
+          {{ match.incomingName }}
+        </span>
         <span class="match-arrow">is</span>
         <select v-model="matchSelections[match.incomingId]">
           <option :value="NEW_PERSON">➕ a new person</option>
@@ -153,7 +165,9 @@ function cancelMergeReview() {
 
     <main class="content">
       <section v-show="tab === 'expenses'" class="expenses-tab">
-        <ExpenseForm :editing-expense="editingExpense" @done="stopEditing" />
+        <button type="button" class="primary add-expense-btn" @click="openAddExpense">
+          + Add expense
+        </button>
         <ExpenseList @edit="editExpense" />
       </section>
 
@@ -165,6 +179,14 @@ function cancelMergeReview() {
         <BalancesPanel />
       </section>
     </main>
+
+    <Modal
+      v-if="showExpenseModal"
+      :title="editingExpense ? 'Edit expense' : 'Add an expense'"
+      @close="closeExpenseModal"
+    >
+      <ExpenseForm :editing-expense="editingExpense" @done="closeExpenseModal" />
+    </Modal>
 
     <footer class="app-footer">
       All group data lives only in this page's URL — nothing is saved to this
@@ -279,8 +301,11 @@ function cancelMergeReview() {
 }
 
 .match-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-weight: 600;
-  min-width: 5rem;
+  min-width: 6rem;
 }
 
 .match-arrow {
@@ -334,6 +359,10 @@ function cancelMergeReview() {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+.add-expense-btn {
+  min-height: 44px;
 }
 
 .app-footer {

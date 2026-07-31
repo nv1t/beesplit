@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useGroupData } from '../composables/useGroupData'
 import { formatAmount } from '../utils/format'
+import Avatar from './Avatar.vue'
 import type { Expense } from '../types'
 
 const emit = defineEmits<{
@@ -29,11 +30,21 @@ function handleRemove(id: string) {
     <p v-if="sortedExpenses.length === 0" class="empty">No expenses yet.</p>
     <ul v-else class="expense-list">
       <li v-for="expense in sortedExpenses" :key="expense.id" class="expense-row">
+        <Avatar :id="expense.paidBy" :name="memberName(expense.paidBy)" />
         <div class="expense-main">
           <div class="expense-title">{{ expense.description }}</div>
           <div class="expense-meta">
-            {{ memberName(expense.paidBy) }} paid · split between
-            {{ expense.participants.map(memberName).join(', ') }} · {{ expense.date }}
+            <span class="paid-by">{{ memberName(expense.paidBy) }} paid</span>
+            <span class="avatar-stack">
+              <Avatar
+                v-for="pid in expense.participants"
+                :key="pid"
+                :id="pid"
+                :name="memberName(pid)"
+                size="sm"
+              />
+            </span>
+            <span class="expense-date">{{ expense.date }}</span>
           </div>
         </div>
         <div class="expense-trailing">
@@ -90,11 +101,33 @@ h2 {
 }
 
 .expense-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.78rem;
   color: var(--text-muted);
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.paid-by,
+.expense-date {
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.avatar-stack {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.avatar-stack :deep(.avatar) {
+  margin-left: -6px;
+  border: 2px solid var(--surface-alt);
+}
+
+.avatar-stack :deep(.avatar):first-child {
+  margin-left: 0;
 }
 
 .expense-trailing {

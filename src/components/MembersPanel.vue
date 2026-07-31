@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useGroupData } from '../composables/useGroupData'
+import Avatar from './Avatar.vue'
 
 const { members, addMember, renameMember, removeMember } = useGroupData()
 
@@ -47,6 +48,7 @@ function handleRemove(id: string) {
 
     <ul v-if="members.length" class="member-list">
       <li v-for="member in members" :key="member.id" class="member-row">
+        <Avatar :id="member.id" :name="editingId === member.id ? editingName : member.name" />
         <template v-if="editingId === member.id">
           <input
             v-model="editingName"
@@ -107,7 +109,7 @@ h2 {
 .member-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.6rem;
   padding: 0.5rem 0.75rem;
   background: var(--surface-alt);
   border-radius: 8px;

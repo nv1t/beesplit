@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useGroupData } from '../composables/useGroupData'
+import Avatar from './Avatar.vue'
 import type { Expense } from '../types'
 
 const props = defineProps<{
@@ -99,9 +100,7 @@ function handleCancel() {
 </script>
 
 <template>
-  <form class="panel expense-form" @submit.prevent="handleSubmit">
-    <h2>{{ editingExpense ? 'Edit expense' : 'Add an expense' }}</h2>
-
+  <form class="expense-form" @submit.prevent="handleSubmit">
     <p v-if="members.length === 0" class="empty">Add people to the group first.</p>
 
     <template v-else>
@@ -138,6 +137,7 @@ function handleCancel() {
         <div class="participant-grid">
           <label v-for="m in members" :key="m.id" class="participant-chip">
             <input type="checkbox" v-model="participants" :value="m.id" />
+            <Avatar :id="m.id" :name="m.name" size="sm" />
             {{ m.name }}
           </label>
         </div>
@@ -147,25 +147,13 @@ function handleCancel() {
 
       <div class="actions">
         <button type="submit" class="primary">{{ editingExpense ? 'Save changes' : 'Add expense' }}</button>
-        <button v-if="editingExpense" type="button" @click="handleCancel">Cancel</button>
+        <button type="button" @click="handleCancel">Cancel</button>
       </div>
     </template>
   </form>
 </template>
 
 <style scoped>
-.panel {
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 1.25rem;
-  box-shadow: var(--shadow);
-}
-
-h2 {
-  margin: 0 0 0.75rem;
-  font-size: 1.1rem;
-}
-
 .field {
   display: flex;
   flex-direction: column;
