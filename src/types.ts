@@ -17,3 +17,9 @@ export interface Settlement {
   to: string
   amount: number
 }
+
+export interface GroupState {
+  members: Member[]
+  expenses: Expense[]
+  currencySymbol: string
+}

@@ -7,12 +7,17 @@ import BalancesPanel from './components/BalancesPanel.vue'
 import { useGroupData } from './composables/useGroupData'
 import type { Expense } from './types'
 
-const { currencySymbol, setCurrencySymbol } = useGroupData()
+const { currencySymbol, setCurrencySymbol, mergeFromLink } = useGroupData()
 
 type Tab = 'expenses' | 'people' | 'balances'
 const tab = ref<Tab>('expenses')
 const editingExpense = ref<Expense | null>(null)
 const linkCopied = ref(false)
+
+const showMergeForm = ref(false)
+const mergeInput = ref('')
+const mergeMessage = ref('')
+const mergeError = ref('')
 
 function editExpense(expense: Expense) {
   editingExpense.value = expense
@@ -31,6 +36,23 @@ async function copyShareLink() {
   } catch (e) {
     console.warn('Could not copy link automatically.', e)
     prompt('Copy this link to save or share your data:', window.location.href)
+  }
+}
+
+function handleMerge() {
+  mergeError.value = ''
+  mergeMessage.value = ''
+  if (!mergeInput.value.trim()) return
+
+  try {
+    const { addedMembers, addedExpenses } = mergeFromLink(mergeInput.value)
+    const parts = []
+    if (addedMembers > 0) parts.push(`${addedMembers} new ${addedMembers === 1 ? 'person' : 'people'}`)
+    if (addedExpenses > 0) parts.push(`${addedExpenses} new ${addedExpenses === 1 ? 'expense' : 'expenses'}`)
+    mergeMessage.value = parts.length > 0 ? `Merged in ${parts.join(' and ')}.` : 'Nothing new to merge in.'
+    mergeInput.value = ''
+  } catch (e) {
+    mergeError.value = e instanceof Error ? e.message : 'Could not merge that link.'
   }
 }
 </script>
@@ -53,8 +75,22 @@ async function copyShareLink() {
         <button type="button" class="share-btn" @click="copyShareLink">
           {{ linkCopied ? 'Link copied ✓' : '🔗 Copy link' }}
         </button>
+        <button type="button" class="share-btn" @click="showMergeForm = !showMergeForm">
+          🔀 Merge a link
+        </button>
       </div>
     </header>
+
+    <form v-if="showMergeForm" class="merge-form" @submit.prevent="handleMerge">
+      <input
+        v-model="mergeInput"
+        type="text"
+        placeholder="Paste someone else's BeeSplit link here"
+      />
+      <button type="submit" class="primary">Merge</button>
+    </form>
+    <p v-if="mergeMessage" class="merge-feedback success">{{ mergeMessage }}</p>
+    <p v-if="mergeError" class="merge-feedback error">{{ mergeError }}</p>
 
     <nav class="tabs">
       <button :class="{ active: tab === 'expenses' }" @click="tab = 'expenses'">Expenses</button>
@@ -138,6 +174,30 @@ async function copyShareLink() {
   padding: 0.4rem 0.7rem;
   min-height: 36px;
   white-space: nowrap;
+}
+
+.merge-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.merge-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+.merge-feedback {
+  font-size: 0.85rem;
+  margin: -0.25rem 0 0.75rem;
+}
+
+.merge-feedback.success {
+  color: var(--success);
+}
+
+.merge-feedback.error {
+  color: var(--danger);
 }
 
 .tabs {

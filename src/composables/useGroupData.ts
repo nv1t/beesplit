@@ -1,34 +1,33 @@
 import { reactive, computed, watch } from 'vue'
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
-import type { Member, Expense } from '../types'
+import type { GroupState, Expense } from '../types'
 import { simplifyDebts } from '../utils/settle'
+import { mergeStates, type MergeResult } from '../utils/merge'
 
 const STORAGE_KEY = 'beesplit.data.v1'
 
-interface StoredState {
-  members: Member[]
-  expenses: Expense[]
-  currencySymbol: string
-}
-
-function defaultState(): StoredState {
+function defaultState(): GroupState {
   return { members: [], expenses: [], currencySymbol: '$' }
 }
 
-function readFromHash(): StoredState | null {
-  const hash = window.location.hash.slice(1)
-  if (!hash) return null
+function decodeHash(hash: string): GroupState | null {
   try {
     const json = decompressFromEncodedURIComponent(hash)
     if (!json) return null
     return { ...defaultState(), ...JSON.parse(json) }
   } catch (e) {
-    console.warn('Failed to read data from URL, ignoring it.', e)
+    console.warn('Failed to decode BeeSplit link.', e)
     return null
   }
 }
 
-function readFromStorage(): StoredState | null {
+function readFromHash(): GroupState | null {
+  const hash = window.location.hash.slice(1)
+  if (!hash) return null
+  return decodeHash(hash)
+}
+
+function readFromStorage(): GroupState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) return { ...defaultState(), ...JSON.parse(raw) }
@@ -38,11 +37,11 @@ function readFromStorage(): StoredState | null {
   return null
 }
 
-function loadState(): StoredState {
+function loadState(): GroupState {
   return readFromHash() ?? readFromStorage() ?? defaultState()
 }
 
-const state = reactive<StoredState>(loadState())
+const state = reactive<GroupState>(loadState())
 
 // immediate: true also persists a shared link's data to localStorage right
 // away, so it survives a plain reload (i.e. once the hash is gone) on this
@@ -101,6 +100,28 @@ function setCurrencySymbol(symbol: string) {
   state.currencySymbol = symbol.trim() || '$'
 }
 
+function extractHash(pasted: string): string {
+  const trimmed = pasted.trim()
+  const hashIndex = trimmed.indexOf('#')
+  return hashIndex !== -1 ? trimmed.slice(hashIndex + 1) : trimmed
+}
+
+/**
+ * Merges a pasted BeeSplit link (or bare hash) into the current group,
+ * combining people and expenses instead of overwriting what's already here.
+ */
+function mergeFromLink(pasted: string): MergeResult {
+  const incoming = decodeHash(extractHash(pasted))
+  if (!incoming) {
+    throw new Error("That doesn't look like a valid BeeSplit link.")
+  }
+
+  const result = mergeStates(state, incoming)
+  state.members = result.state.members
+  state.expenses = result.state.expenses
+  return result
+}
+
 const balances = computed<Record<string, number>>(() => {
   const result: Record<string, number> = {}
   for (const member of state.members) result[member.id] = 0
@@ -145,5 +166,6 @@ export function useGroupData() {
     updateExpense,
     removeExpense,
     setCurrencySymbol,
+    mergeFromLink,
   }
 }
