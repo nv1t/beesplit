@@ -84,6 +84,8 @@ h3 {
 .balance-row {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
   padding: 0.5rem 0.75rem;
   background: var(--surface-alt);
   border-radius: 8px;
@@ -102,6 +104,8 @@ h3 {
 .settlement-row {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
   padding: 0.5rem 0.75rem;
   background: var(--surface-alt);
   border-radius: 8px;

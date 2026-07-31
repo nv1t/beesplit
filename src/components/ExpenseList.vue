@@ -36,10 +36,12 @@ function handleRemove(id: string) {
             {{ expense.participants.map(memberName).join(', ') }} · {{ expense.date }}
           </div>
         </div>
-        <div class="expense-amount">{{ currencySymbol }}{{ formatAmount(expense.amount) }}</div>
-        <div class="expense-actions">
-          <button class="icon-btn" title="Edit" @click="emit('edit', expense)">✎</button>
-          <button class="icon-btn danger" title="Delete" @click="handleRemove(expense.id)">✕</button>
+        <div class="expense-trailing">
+          <div class="expense-amount">{{ currencySymbol }}{{ formatAmount(expense.amount) }}</div>
+          <div class="expense-actions">
+            <button class="icon-btn" title="Edit" @click="emit('edit', expense)">✎</button>
+            <button class="icon-btn danger" title="Delete" @click="handleRemove(expense.id)">✕</button>
+          </div>
         </div>
       </li>
     </ul>
@@ -71,14 +73,15 @@ h2 {
 .expense-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
   padding: 0.65rem 0.75rem;
   background: var(--surface-alt);
   border-radius: 8px;
 }
 
 .expense-main {
-  flex: 1;
+  flex: 1 1 160px;
   min-width: 0;
 }
 
@@ -94,6 +97,13 @@ h2 {
   white-space: nowrap;
 }
 
+.expense-trailing {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
 .expense-amount {
   font-weight: 600;
   white-space: nowrap;
@@ -101,7 +111,7 @@ h2 {
 
 .expense-actions {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.1rem;
 }
 
 .icon-btn {
@@ -110,7 +120,9 @@ h2 {
   cursor: pointer;
   color: var(--text-muted);
   font-size: 0.9rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem;
+  min-width: 40px;
+  min-height: 40px;
   border-radius: 6px;
 }
 

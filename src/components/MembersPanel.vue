@@ -88,6 +88,11 @@ h2 {
 
 .add-row input {
   flex: 1;
+  min-width: 0;
+}
+
+.add-row button {
+  min-height: 44px;
 }
 
 .member-list {
@@ -123,7 +128,9 @@ h2 {
   cursor: pointer;
   color: var(--text-muted);
   font-size: 0.9rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem;
+  min-width: 40px;
+  min-height: 40px;
   border-radius: 6px;
 }
 

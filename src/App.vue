@@ -73,10 +73,18 @@ function stopEditing() {
   padding: 1.5rem 1rem 3rem;
 }
 
+@media (max-width: 480px) {
+  .app {
+    padding: 1rem 0.75rem 2rem;
+  }
+}
+
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
   margin-bottom: 1rem;
 }
 
@@ -113,6 +121,7 @@ function stopEditing() {
   border: none;
   background: transparent;
   padding: 0.55rem 0.75rem;
+  min-height: 44px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;

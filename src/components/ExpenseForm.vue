@@ -185,6 +185,13 @@ h2 {
 
 .row .field {
   flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 420px) {
+  .row {
+    flex-direction: column;
+  }
 }
 
 .split-header {
@@ -199,7 +206,7 @@ h2 {
   color: var(--accent);
   cursor: pointer;
   font-size: 0.8rem;
-  padding: 0;
+  padding: 0.4rem 0;
 }
 
 .participant-grid {
@@ -214,16 +221,31 @@ h2 {
   align-items: center;
   gap: 0.4rem;
   background: var(--surface-alt);
-  padding: 0.4rem 0.7rem;
+  padding: 0.55rem 0.8rem;
   border-radius: 999px;
   font-size: 0.85rem;
   cursor: pointer;
+}
+
+.participant-chip input {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .actions {
   display: flex;
   gap: 0.5rem;
   margin-top: 0.5rem;
+}
+
+.actions button {
+  min-height: 44px;
+}
+
+@media (max-width: 420px) {
+  .actions {
+    flex-direction: column;
+  }
 }
 
 .error {

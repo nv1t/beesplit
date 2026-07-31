@@ -63,6 +63,8 @@ select {
   border-radius: 8px;
   background: var(--surface);
   color: var(--text);
+  /* 16px stops iOS Safari from auto-zooming the page on focus */
+  font-size: max(16px, 1rem);
 }
 
 input:focus,
@@ -78,6 +80,8 @@ button {
   padding: 0.5rem 0.9rem;
   background: var(--surface-alt);
   color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 button.primary {
