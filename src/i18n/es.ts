@@ -89,6 +89,20 @@ export default {
     newExpenseSingular: '{count} gasto nuevo',
     newExpensesPlural: '{count} gastos nuevos',
   },
+  history: {
+    button: 'Historial',
+    hint: 'Un registro de deshacer local solo para este navegador — no se comparte con nadie y es independiente de los datos del grupo en la URL.',
+    empty: 'Aún no hay historial.',
+    current: 'Actual',
+    restore: 'Restaurar',
+    clear: 'Borrar historial',
+    confirmClear: '¿Borrar todo el historial guardado en este dispositivo? Esto no se puede deshacer.',
+    summaryPersonSingular: '1 persona',
+    summaryPeoplePlural: '{count} personas',
+    summaryExpenseSingular: '1 gasto',
+    summaryExpensesPlural: '{count} gastos',
+    summaryTemplate: '{people} · {expenses} · {total}',
+  },
   footer: {
     before:
       'Todos los datos del grupo viven únicamente en la URL de esta página — nunca se guardan en este dispositivo ni se sincronizan en ningún lugar (solo la propia aplicación se guarda en caché para su uso sin conexión). Guarda o copia el enlace para conservar tu grupo; si cierras esta pestaña sin guardar el enlace, se perderán los datos. Este sitio usa',

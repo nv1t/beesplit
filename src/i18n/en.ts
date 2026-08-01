@@ -88,6 +88,21 @@ export default {
     newExpenseSingular: '{count} new expense',
     newExpensesPlural: '{count} new expenses',
   },
+  history: {
+    button: 'History',
+    hint:
+      "A local undo log for this browser only — not shared with anyone, and separate from the group data in the URL.",
+    empty: 'No history yet.',
+    current: 'Current',
+    restore: 'Restore',
+    clear: 'Clear history',
+    confirmClear: 'Clear all saved history on this device? This cannot be undone.',
+    summaryPersonSingular: '1 person',
+    summaryPeoplePlural: '{count} people',
+    summaryExpenseSingular: '1 expense',
+    summaryExpensesPlural: '{count} expenses',
+    summaryTemplate: '{people} · {expenses} · {total}',
+  },
   footer: {
     before:
       "All group data lives only in this page's URL — never saved to this device or synced anywhere (only the app itself is cached for offline use). Bookmark or copy the link to keep your group; closing this tab without saving the link will lose it. This site uses",

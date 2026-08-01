@@ -89,6 +89,20 @@ export default {
     newExpenseSingular: '{count} nuova spesa',
     newExpensesPlural: '{count} nuove spese',
   },
+  history: {
+    button: 'Cronologia',
+    hint: 'Un registro di annullamento locale solo per questo browser — non condiviso con nessuno e separato dai dati del gruppo nell\'URL.',
+    empty: 'Nessuna cronologia ancora.',
+    current: 'Attuale',
+    restore: 'Ripristina',
+    clear: 'Cancella cronologia',
+    confirmClear: 'Cancellare tutta la cronologia salvata su questo dispositivo? Questa azione non può essere annullata.',
+    summaryPersonSingular: '1 persona',
+    summaryPeoplePlural: '{count} persone',
+    summaryExpenseSingular: '1 spesa',
+    summaryExpensesPlural: '{count} spese',
+    summaryTemplate: '{people} · {expenses} · {total}',
+  },
   footer: {
     before:
       "Tutti i dati del gruppo vivono solo nell'URL di questa pagina — non vengono mai salvati su questo dispositivo né sincronizzati altrove (viene messa in cache solo l'app stessa, per l'uso offline). Aggiungi ai preferiti o copia il link per conservare il tuo gruppo; chiudendo questa scheda senza salvare il link, i dati andranno persi. Questo sito utilizza",

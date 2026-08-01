@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MembersPanel from './components/MembersPanel.vue'
 import ExpenseForm from './components/ExpenseForm.vue'
@@ -7,18 +7,29 @@ import ExpenseList from './components/ExpenseList.vue'
 import BalancesPanel from './components/BalancesPanel.vue'
 import Modal from './components/Modal.vue'
 import Avatar from './components/Avatar.vue'
-import { useGroupData, type MergePreview } from './composables/useGroupData'
+import { useGroupData, type MergePreview, type HistoryEntry } from './composables/useGroupData'
 import { NEW_PERSON } from './utils/merge'
 import { LOCALE_OPTIONS } from './i18n'
+import { formatAmount } from './utils/format'
 import type { Expense } from './types'
 
 const { t, locale } = useI18n()
-const { members, currencySymbol, setCurrencySymbol, previewMerge, confirmMerge } = useGroupData()
+const {
+  members,
+  currencySymbol,
+  setCurrencySymbol,
+  previewMerge,
+  confirmMerge,
+  historyLog,
+  restoreFromHistory,
+  clearHistory,
+} = useGroupData()
 
 type Tab = 'expenses' | 'people' | 'balances' | 'settings'
 const tab = ref<Tab>('expenses')
 const editingExpense = ref<Expense | null>(null)
 const showExpenseModal = ref(false)
+const showHistoryModal = ref(false)
 const linkCopied = ref(false)
 
 const mergeInput = ref('')
@@ -106,15 +117,55 @@ function confirmMergeReview() {
 function cancelMergeReview() {
   mergePreview.value = null
 }
+
+const sortedHistory = computed(() => [...historyLog.value].reverse())
+
+function formatTimestamp(ts: number): string {
+  return new Date(ts).toLocaleString(locale.value, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  })
+}
+
+function summarizeEntry(entry: HistoryEntry): string {
+  const peopleCount = entry.state.members.length
+  const expensesCount = entry.state.expenses.length
+  const total = entry.state.expenses.reduce((sum, e) => sum + e.amount, 0)
+
+  const people = t(peopleCount === 1 ? 'history.summaryPersonSingular' : 'history.summaryPeoplePlural', {
+    count: peopleCount,
+  })
+  const expenses = t(
+    expensesCount === 1 ? 'history.summaryExpenseSingular' : 'history.summaryExpensesPlural',
+    { count: expensesCount },
+  )
+  const totalStr = currencySymbol.value + formatAmount(Math.round(total * 100) / 100)
+
+  return t('history.summaryTemplate', { people, expenses, total: totalStr })
+}
+
+function handleRestore(entry: HistoryEntry) {
+  restoreFromHistory(entry)
+  showHistoryModal.value = false
+}
+
+function handleClearHistory() {
+  if (confirm(t('history.confirmClear'))) clearHistory()
+}
 </script>
 
 <template>
   <div class="app">
     <header class="app-header">
       <h1>🐝 BeeSplit</h1>
-      <button type="button" class="share-btn" @click="copyShareLink">
-        {{ linkCopied ? $t('app.linkCopied') : $t('app.copyLink') }}
-      </button>
+      <div class="header-controls">
+        <button type="button" class="share-btn" @click="showHistoryModal = true">
+          🕘 {{ $t('history.button') }}
+        </button>
+        <button type="button" class="share-btn" @click="copyShareLink">
+          {{ linkCopied ? $t('app.linkCopied') : $t('app.copyLink') }}
+        </button>
+      </div>
     </header>
 
     <nav class="tabs">
@@ -219,6 +270,40 @@ function cancelMergeReview() {
       <ExpenseForm :editing-expense="editingExpense" @done="closeExpenseModal" />
     </Modal>
 
+    <Modal v-if="showHistoryModal" :title="$t('history.button')" @close="showHistoryModal = false">
+      <p class="panel-hint">{{ $t('history.hint') }}</p>
+
+      <p v-if="sortedHistory.length === 0" class="empty">{{ $t('history.empty') }}</p>
+      <ul v-else class="history-list">
+        <li v-for="(entry, idx) in sortedHistory" :key="entry.timestamp" class="history-row">
+          <div class="history-info">
+            <div class="history-time">
+              {{ formatTimestamp(entry.timestamp) }}
+              <span v-if="idx === 0" class="history-current">{{ $t('history.current') }}</span>
+            </div>
+            <div class="history-summary">{{ summarizeEntry(entry) }}</div>
+          </div>
+          <button
+            type="button"
+            class="history-restore"
+            :disabled="idx === 0"
+            @click="handleRestore(entry)"
+          >
+            {{ $t('history.restore') }}
+          </button>
+        </li>
+      </ul>
+
+      <button
+        v-if="sortedHistory.length > 0"
+        type="button"
+        class="history-clear"
+        @click="handleClearHistory"
+      >
+        {{ $t('history.clear') }}
+      </button>
+    </Modal>
+
     <footer class="app-footer">
       {{ $t('footer.before') }}
       <a href="https://www.goatcounter.com/" target="_blank" rel="noopener noreferrer">
@@ -255,6 +340,13 @@ function cancelMergeReview() {
   color: var(--accent);
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .share-btn {
   font-size: 0.8rem;
   padding: 0.4rem 0.7rem;
@@ -278,6 +370,73 @@ function cancelMergeReview() {
   font-size: 0.85rem;
   color: var(--text-muted);
   margin: 0 0 0.75rem;
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--surface-alt);
+  border-radius: 8px;
+}
+
+.history-info {
+  min-width: 0;
+}
+
+.history-time {
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.history-current {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--surface);
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+}
+
+.history-summary {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.history-restore {
+  flex-shrink: 0;
+  min-height: 40px;
+}
+
+.history-restore:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.history-clear {
+  width: 100%;
+  min-height: 44px;
+  color: var(--danger);
 }
 
 .settings-tab {

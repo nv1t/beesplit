@@ -7,6 +7,14 @@ import { i18n } from '../i18n'
 
 const t = i18n.global.t
 
+const HISTORY_KEY = 'beesplit.history.v1'
+const MAX_HISTORY_ENTRIES = 50
+
+export interface HistoryEntry {
+  timestamp: number
+  state: GroupState
+}
+
 function defaultState(): GroupState {
   return { members: [], expenses: [], currencySymbol: '€' }
 }
@@ -32,18 +40,56 @@ function loadState(): GroupState {
   return readFromHash() ?? defaultState()
 }
 
+function loadHistoryLog(): HistoryEntry[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch (e) {
+    console.warn('Failed to load history, starting fresh.', e)
+  }
+  return []
+}
+
 const state = reactive<GroupState>(loadState())
 
+// A local, on-this-device-only undo log — separate from the group data
+// itself, which lives only in the URL. Kept in localStorage so it survives
+// a reload; capped and deduped so it can't grow without bound.
+const historyLog = reactive<HistoryEntry[]>(loadHistoryLog())
+
 // immediate: true normalizes the URL hash to reflect the loaded state right
-// away. The URL is the only place this data lives — nothing touches disk.
+// away. The URL is the only place the group data lives — nothing touches
+// disk except the separate local history log above.
 watch(
   state,
   (value) => {
     const encoded = compressToEncodedURIComponent(JSON.stringify(value))
     history.replaceState(null, '', `#${encoded}`)
+
+    const snapshot = JSON.parse(JSON.stringify(value)) as GroupState
+    const last = historyLog[historyLog.length - 1]
+    if (last && JSON.stringify(last.state) === JSON.stringify(snapshot)) return
+
+    historyLog.push({ timestamp: Date.now(), state: snapshot })
+    if (historyLog.length > MAX_HISTORY_ENTRIES) historyLog.splice(0, historyLog.length - MAX_HISTORY_ENTRIES)
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLog))
   },
   { deep: true, immediate: true },
 )
+
+function restoreFromHistory(entry: HistoryEntry) {
+  // Deep-clone: entry.state is still referenced by historyLog, and must not
+  // become live state that future edits would then mutate in place.
+  const clone = JSON.parse(JSON.stringify(entry.state)) as GroupState
+  state.members = clone.members
+  state.expenses = clone.expenses
+  state.currencySymbol = clone.currencySymbol
+}
+
+function clearHistory() {
+  historyLog.splice(0, historyLog.length)
+  localStorage.removeItem(HISTORY_KEY)
+}
 
 function makeId(): string {
   return crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)
@@ -171,5 +217,8 @@ export function useGroupData() {
     setCurrencySymbol,
     previewMerge,
     confirmMerge,
+    historyLog: computed(() => historyLog),
+    restoreFromHistory,
+    clearHistory,
   }
 }

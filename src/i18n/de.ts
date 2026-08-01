@@ -89,6 +89,20 @@ export default {
     newExpenseSingular: '{count} neue Ausgabe',
     newExpensesPlural: '{count} neue Ausgaben',
   },
+  history: {
+    button: 'Verlauf',
+    hint: 'Ein lokales Rückgängig-Protokoll nur für diesen Browser — wird mit niemandem geteilt und ist getrennt von den Gruppendaten in der URL.',
+    empty: 'Noch kein Verlauf.',
+    current: 'Aktuell',
+    restore: 'Wiederherstellen',
+    clear: 'Verlauf löschen',
+    confirmClear: 'Den gesamten gespeicherten Verlauf auf diesem Gerät löschen? Das kann nicht rückgängig gemacht werden.',
+    summaryPersonSingular: '1 Person',
+    summaryPeoplePlural: '{count} Personen',
+    summaryExpenseSingular: '1 Ausgabe',
+    summaryExpensesPlural: '{count} Ausgaben',
+    summaryTemplate: '{people} · {expenses} · {total}',
+  },
   footer: {
     before:
       'Alle Gruppendaten befinden sich ausschließlich in der URL dieser Seite — sie werden nie auf diesem Gerät gespeichert oder synchronisiert (nur die App selbst wird für die Offline-Nutzung zwischengespeichert). Setze ein Lesezeichen oder kopiere den Link, um deine Gruppe zu behalten; schließt du diesen Tab, ohne den Link zu speichern, gehen die Daten verloren. Diese Seite verwendet',

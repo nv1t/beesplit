@@ -89,6 +89,20 @@ export default {
     newExpenseSingular: '{count} nouvelle dépense',
     newExpensesPlural: '{count} nouvelles dépenses',
   },
+  history: {
+    button: 'Historique',
+    hint: "Un journal d'annulation local à ce navigateur uniquement — non partagé avec qui que ce soit, et distinct des données du groupe dans l'URL.",
+    empty: "Pas encore d'historique.",
+    current: 'Actuel',
+    restore: 'Restaurer',
+    clear: "Effacer l'historique",
+    confirmClear: "Effacer tout l'historique enregistré sur cet appareil ? Cette action est irréversible.",
+    summaryPersonSingular: '1 personne',
+    summaryPeoplePlural: '{count} personnes',
+    summaryExpenseSingular: '1 dépense',
+    summaryExpensesPlural: '{count} dépenses',
+    summaryTemplate: '{people} · {expenses} · {total}',
+  },
   footer: {
     before:
       "Toutes les données du groupe se trouvent uniquement dans l'URL de cette page — jamais enregistrées sur cet appareil ni synchronisées où que ce soit (seule l'application elle-même est mise en cache pour une utilisation hors ligne). Ajoutez ce lien à vos favoris ou copiez-le pour conserver votre groupe ; fermer cet onglet sans enregistrer le lien entraînera la perte des données. Ce site utilise",
