@@ -28,6 +28,8 @@ export default {
     editAction: 'Modifica',
     deleteAction: 'Elimina',
     confirmDelete: 'Eliminare questa spesa?',
+    splitByAmountBadge: 'per importo',
+    splitBySharesBadge: 'per quote',
   },
   expenseForm: {
     addTitle: 'Aggiungi una spesa',
@@ -48,6 +50,12 @@ export default {
     errorAmount: 'Inserisci un importo maggiore di 0.',
     errorPaidBy: 'Scegli chi ha pagato.',
     errorParticipants: 'Seleziona almeno una persona con cui dividere la spesa.',
+    splitEqual: 'Equamente',
+    splitByAmount: 'Per importo',
+    splitByShares: 'Per quote',
+    allocatedHint: '{allocated} di {total} assegnati',
+    errorSplitAmounts: "Gli importi devono corrispondere al totale (attualmente {allocated} di {total}).",
+    errorSplitShares: 'Almeno una persona deve avere una quota maggiore di 0.',
   },
   people: {
     heading: 'Persone',

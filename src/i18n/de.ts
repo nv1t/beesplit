@@ -28,6 +28,8 @@ export default {
     editAction: 'Bearbeiten',
     deleteAction: 'Löschen',
     confirmDelete: 'Diese Ausgabe löschen?',
+    splitByAmountBadge: 'nach Betrag',
+    splitBySharesBadge: 'nach Anteilen',
   },
   expenseForm: {
     addTitle: 'Ausgabe hinzufügen',
@@ -48,6 +50,12 @@ export default {
     errorAmount: 'Gib einen Betrag größer als 0 ein.',
     errorPaidBy: 'Wähle aus, wer bezahlt hat.',
     errorParticipants: 'Wähle mindestens eine Person zum Aufteilen aus.',
+    splitEqual: 'Gleich',
+    splitByAmount: 'Nach Betrag',
+    splitByShares: 'Nach Anteilen',
+    allocatedHint: '{allocated} von {total} zugewiesen',
+    errorSplitAmounts: 'Die Beträge müssen der Gesamtsumme entsprechen (aktuell {allocated} von {total}).',
+    errorSplitShares: 'Mindestens eine Person braucht einen Anteil größer als 0.',
   },
   people: {
     heading: 'Personen',

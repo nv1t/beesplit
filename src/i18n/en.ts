@@ -28,6 +28,8 @@ export default {
     editAction: 'Edit',
     deleteAction: 'Delete',
     confirmDelete: 'Delete this expense?',
+    splitByAmountBadge: 'by amount',
+    splitBySharesBadge: 'by shares',
   },
   expenseForm: {
     addTitle: 'Add an expense',
@@ -48,6 +50,12 @@ export default {
     errorAmount: 'Enter an amount greater than 0.',
     errorPaidBy: 'Choose who paid.',
     errorParticipants: 'Select at least one person to split with.',
+    splitEqual: 'Equal',
+    splitByAmount: 'By amount',
+    splitByShares: 'By shares',
+    allocatedHint: '{allocated} of {total} allocated',
+    errorSplitAmounts: 'Amounts must add up to the total (currently {allocated} of {total}).',
+    errorSplitShares: 'At least one person needs a share greater than 0.',
   },
   people: {
     heading: 'People',

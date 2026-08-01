@@ -21,6 +21,12 @@ function memberName(id: string): string {
   return members.value.find((m) => m.id === id)?.name ?? 'Unknown'
 }
 
+function splitModeLabel(expense: Expense): string | null {
+  if (expense.splitMode === 'amount') return t('expenseList.splitByAmountBadge')
+  if (expense.splitMode === 'shares') return t('expenseList.splitBySharesBadge')
+  return null
+}
+
 function handleRemove(id: string) {
   if (confirm(t('expenseList.confirmDelete'))) removeExpense(id)
 }
@@ -37,6 +43,7 @@ function handleRemove(id: string) {
           <div class="expense-title">{{ expense.description }}</div>
           <div class="expense-meta">
             <span class="paid-by">{{ $t('expenseList.paidLabel', { name: memberName(expense.paidBy) }) }}</span>
+            <span v-if="splitModeLabel(expense)" class="split-badge">{{ splitModeLabel(expense) }}</span>
             <span class="avatar-stack">
               <Avatar
                 v-for="pid in expense.participants"
@@ -116,6 +123,17 @@ h2 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.split-badge {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--surface);
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .avatar-stack {

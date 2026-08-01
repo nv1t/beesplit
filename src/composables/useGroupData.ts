@@ -3,6 +3,7 @@ import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from
 import type { GroupState, Expense } from '../types'
 import { simplifyDebts } from '../utils/settle'
 import { buildMatchSuggestions, applyMerge, type MatchSuggestion, type MergeResult } from '../utils/merge'
+import { participantShare } from '../utils/split'
 import { i18n } from '../i18n'
 
 const t = i18n.global.t
@@ -176,13 +177,12 @@ const balances = computed<Record<string, number>>(() => {
   for (const member of state.members) result[member.id] = 0
 
   for (const expense of state.expenses) {
-    const share = expense.amount / expense.participants.length
     if (result[expense.paidBy] !== undefined) {
       result[expense.paidBy] += expense.amount
     }
     for (const participantId of expense.participants) {
       if (result[participantId] !== undefined) {
-        result[participantId] -= share
+        result[participantId] -= participantShare(expense, participantId)
       }
     }
   }

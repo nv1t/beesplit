@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useGroupData } from '../composables/useGroupData'
+import { sumSplitAmounts, sumSplitShares } from '../utils/split'
+import { formatAmount } from '../utils/format'
 import Avatar from './Avatar.vue'
-import type { Expense } from '../types'
+import type { Expense, SplitMode } from '../types'
 
 const props = defineProps<{
   editingExpense?: Expense | null
@@ -14,7 +16,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { members, addExpense, updateExpense } = useGroupData()
+const { members, currencySymbol, addExpense, updateExpense } = useGroupData()
 
 const description = ref('')
 const amount = ref<string>('')
@@ -22,6 +24,25 @@ const paidBy = ref('')
 const participants = ref<string[]>([])
 const date = ref(new Date().toISOString().slice(0, 10))
 const error = ref('')
+
+const splitMode = ref<SplitMode>('equal')
+// String-keyed by member id, string-valued (like `amount`) so the inputs
+// allow free typing; parsed to numbers only at validation/submit time.
+const splitAmounts = reactive<Record<string, string>>({})
+const splitShares = reactive<Record<string, string>>({})
+
+// Fill in sane defaults for any participant that doesn't have one yet —
+// never overwrites a value already entered (or loaded from an edit).
+watch(
+  participants,
+  (ids) => {
+    for (const id of ids) {
+      if (!(id in splitAmounts)) splitAmounts[id] = ''
+      if (!(id in splitShares)) splitShares[id] = '1'
+    }
+  },
+  { immediate: true },
+)
 
 watch(
   () => props.editingExpense,
@@ -32,6 +53,12 @@ watch(
       paidBy.value = expense.paidBy
       participants.value = [...expense.participants]
       date.value = expense.date
+      splitMode.value = expense.splitMode ?? 'equal'
+
+      for (const key of Object.keys(splitAmounts)) delete splitAmounts[key]
+      for (const key of Object.keys(splitShares)) delete splitShares[key]
+      for (const [id, value] of Object.entries(expense.splitAmounts ?? {})) splitAmounts[id] = String(value)
+      for (const [id, value] of Object.entries(expense.splitShares ?? {})) splitShares[id] = String(value)
     } else {
       resetForm()
     }
@@ -47,18 +74,39 @@ function toggleAll() {
   participants.value = allSelected.value ? [] : members.value.map((m) => m.id)
 }
 
+const allocatedAmount = computed(() => {
+  const amounts: Record<string, number> = {}
+  for (const id of participants.value) amounts[id] = parseFloat(splitAmounts[id]) || 0
+  return sumSplitAmounts(amounts, participants.value)
+})
+
+function shareResultDisplay(id: string): string {
+  const totalShares = sumSplitShares(
+    Object.fromEntries(participants.value.map((pid) => [pid, parseFloat(splitShares[pid]) || 0])),
+    participants.value,
+  )
+  if (totalShares <= 0) return '—'
+  const myShares = parseFloat(splitShares[id]) || 0
+  const parsedAmount = parseFloat(amount.value) || 0
+  return currencySymbol.value + formatAmount(Math.round(((parsedAmount * myShares) / totalShares) * 100) / 100)
+}
+
 function resetForm() {
   description.value = ''
   amount.value = ''
   paidBy.value = members.value[0]?.id ?? ''
   participants.value = members.value.map((m) => m.id)
   date.value = new Date().toISOString().slice(0, 10)
+  splitMode.value = 'equal'
+  for (const key of Object.keys(splitAmounts)) delete splitAmounts[key]
+  for (const key of Object.keys(splitShares)) delete splitShares[key]
   error.value = ''
 }
 
 function handleSubmit() {
   error.value = ''
   const parsedAmount = parseFloat(amount.value)
+  const roundedAmount = Math.round(parsedAmount * 100) / 100
 
   if (!description.value.trim()) {
     error.value = t('expenseForm.errorDescription')
@@ -77,12 +125,40 @@ function handleSubmit() {
     return
   }
 
+  let payloadSplitAmounts: Record<string, number> | undefined
+  let payloadSplitShares: Record<string, number> | undefined
+
+  if (splitMode.value === 'amount') {
+    const amounts: Record<string, number> = {}
+    for (const id of participants.value) amounts[id] = Math.round((parseFloat(splitAmounts[id]) || 0) * 100) / 100
+    const allocated = sumSplitAmounts(amounts, participants.value)
+    if (Math.abs(allocated - roundedAmount) > 0.01) {
+      error.value = t('expenseForm.errorSplitAmounts', {
+        allocated: currencySymbol.value + formatAmount(allocated),
+        total: currencySymbol.value + formatAmount(roundedAmount),
+      })
+      return
+    }
+    payloadSplitAmounts = amounts
+  } else if (splitMode.value === 'shares') {
+    const shares: Record<string, number> = {}
+    for (const id of participants.value) shares[id] = parseFloat(splitShares[id]) || 0
+    if (sumSplitShares(shares, participants.value) <= 0) {
+      error.value = t('expenseForm.errorSplitShares')
+      return
+    }
+    payloadSplitShares = shares
+  }
+
   const payload = {
     description: description.value.trim(),
-    amount: Math.round(parsedAmount * 100) / 100,
+    amount: roundedAmount,
     paidBy: paidBy.value,
     participants: participants.value,
     date: date.value,
+    splitMode: splitMode.value,
+    splitAmounts: payloadSplitAmounts,
+    splitShares: payloadSplitShares,
   }
 
   if (props.editingExpense) {
@@ -136,13 +212,67 @@ function handleCancel() {
             {{ allSelected ? $t('expenseForm.clearAll') : $t('expenseForm.selectAll') }}
           </button>
         </div>
-        <div class="participant-grid">
+
+        <div class="split-mode-group">
+          <label class="split-mode-option">
+            <input type="radio" v-model="splitMode" value="equal" />
+            {{ $t('expenseForm.splitEqual') }}
+          </label>
+          <label class="split-mode-option">
+            <input type="radio" v-model="splitMode" value="amount" />
+            {{ $t('expenseForm.splitByAmount') }}
+          </label>
+          <label class="split-mode-option">
+            <input type="radio" v-model="splitMode" value="shares" />
+            {{ $t('expenseForm.splitByShares') }}
+          </label>
+        </div>
+
+        <div v-if="splitMode === 'equal'" class="participant-grid">
           <label v-for="m in members" :key="m.id" class="participant-chip">
             <input type="checkbox" v-model="participants" :value="m.id" />
             <Avatar :id="m.id" :name="m.name" size="sm" />
             {{ m.name }}
           </label>
         </div>
+
+        <div v-else class="split-rows">
+          <div v-for="m in members" :key="m.id" class="split-row">
+            <label class="split-row-check">
+              <input type="checkbox" v-model="participants" :value="m.id" />
+              <Avatar :id="m.id" :name="m.name" size="sm" />
+              <span class="split-row-name">{{ m.name }}</span>
+            </label>
+            <template v-if="participants.includes(m.id)">
+              <input
+                v-if="splitMode === 'amount'"
+                v-model="splitAmounts[m.id]"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                class="split-row-input"
+              />
+              <template v-else>
+                <input
+                  v-model="splitShares[m.id]"
+                  type="number"
+                  step="1"
+                  min="0"
+                  class="split-row-input split-row-input-shares"
+                />
+                <span class="split-row-hint">{{ shareResultDisplay(m.id) }}</span>
+              </template>
+            </template>
+          </div>
+        </div>
+
+        <p v-if="splitMode === 'amount'" class="split-total-hint">
+          {{ $t('expenseForm.allocatedHint', {
+            allocated: currencySymbol + formatAmount(allocatedAmount),
+            total: currencySymbol + formatAmount(Math.round((parseFloat(amount) || 0) * 100) / 100),
+          }) }}
+        </p>
       </div>
 
       <p v-if="error" class="error">{{ error }}</p>
@@ -201,6 +331,37 @@ function handleCancel() {
   padding: 0.4rem 0;
 }
 
+.split-mode-group {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0.4rem 0 0.6rem;
+  background: var(--surface-alt);
+  padding: 0.25rem;
+  border-radius: 8px;
+}
+
+.split-mode-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.3rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.split-mode-option:has(input:checked) {
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-weight: 600;
+}
+
+.split-mode-option input {
+  width: auto;
+}
+
 .participant-grid {
   display: flex;
   flex-wrap: wrap;
@@ -222,6 +383,62 @@ function handleCancel() {
 .participant-chip input {
   width: 1.1rem;
   height: 1.1rem;
+}
+
+.split-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.split-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface-alt);
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.split-row-check {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 8rem;
+  cursor: pointer;
+}
+
+.split-row-check input {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.split-row-name {
+  font-size: 0.85rem;
+}
+
+.split-row-input {
+  width: 5rem;
+  flex-shrink: 0;
+}
+
+.split-row-input-shares {
+  width: 3.5rem;
+}
+
+.split-row-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 3.5rem;
+}
+
+.split-total-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0.4rem 0 0;
 }
 
 .actions {
