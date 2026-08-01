@@ -21,8 +21,12 @@ into the page's URL. The site uses privacy-friendly, cookie-less analytics
 - Paste someone else's BeeSplit link to merge their people and expenses into
   yours — everyone converges on one shared "truth" instead of overwriting
   each other
-- Works offline once loaded; the only network call is an anonymous
-  GoatCounter page-view ping, no expense data is ever sent anywhere
+- Installable as a PWA (desktop or mobile "Add to Home Screen") and works
+  fully offline once installed, via a Workbox-generated service worker
+- Available in English, German, French, Spanish, and Italian, auto-detected
+  from the device's language (switchable per-session in Settings)
+- The only network call is an anonymous GoatCounter page-view ping —
+  no expense data is ever sent anywhere
 
 ## Tech stack
 
@@ -69,12 +73,14 @@ page (`username.github.io/repo-name/`) or a custom domain.
 
 ## Data & privacy
 
-All group and expense data lives only in the page's URL — nothing is written
-to disk and no expense data is ever sent to a server. Closing the tab without
-saving (bookmarking, copying, or sharing) the link loses the data. Opening a
-different BeeSplit link always starts from exactly what that link encodes;
-use the "Merge a link" button to combine it with what you already have open
-instead of replacing it.
+All group and expense data lives only in the page's URL — it's never written
+to disk or sent to a server (the service worker only caches the app's own
+static files — HTML/CSS/JS/icons — for offline use, never any group or
+expense data). Closing the tab without saving (bookmarking, copying, or
+sharing) the link loses the data. Opening a different BeeSplit link always
+starts from exactly what that link encodes; use the "Merge a link" button
+(Settings tab) to combine it with what you already have open instead of
+replacing it.
 
 The page loads [GoatCounter](https://www.goatcounter.com/) for anonymous,
 cookie-less page-view counts (`nv1t.goatcounter.com`). It only ever sees the

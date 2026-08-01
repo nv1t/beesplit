@@ -91,7 +91,7 @@ export default {
   },
   footer: {
     before:
-      'Todos los datos del grupo viven únicamente en la URL de esta página — no se guarda nada en este dispositivo ni se sincroniza en ningún lugar. Guarda o copia el enlace para conservar tu grupo; si cierras esta pestaña sin guardar el enlace, se perderán los datos. Este sitio usa',
+      'Todos los datos del grupo viven únicamente en la URL de esta página — nunca se guardan en este dispositivo ni se sincronizan en ningún lugar (solo la propia aplicación se guarda en caché para su uso sin conexión). Guarda o copia el enlace para conservar tu grupo; si cierras esta pestaña sin guardar el enlace, se perderán los datos. Este sitio usa',
     goatcounter: 'GoatCounter',
     after:
       ', una herramienta de análisis respetuosa con la privacidad y sin cookies, solo para recuentos anónimos de páginas vistas — nunca para tus datos de gastos.',

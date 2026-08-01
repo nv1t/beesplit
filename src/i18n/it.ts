@@ -91,7 +91,7 @@ export default {
   },
   footer: {
     before:
-      "Tutti i dati del gruppo vivono solo nell'URL di questa pagina — nulla viene salvato su questo dispositivo o sincronizzato altrove. Aggiungi ai preferiti o copia il link per conservare il tuo gruppo; chiudendo questa scheda senza salvare il link, i dati andranno persi. Questo sito utilizza",
+      "Tutti i dati del gruppo vivono solo nell'URL di questa pagina — non vengono mai salvati su questo dispositivo né sincronizzati altrove (viene messa in cache solo l'app stessa, per l'uso offline). Aggiungi ai preferiti o copia il link per conservare il tuo gruppo; chiudendo questa scheda senza salvare il link, i dati andranno persi. Questo sito utilizza",
     goatcounter: 'GoatCounter',
     after:
       ', uno strumento di analisi rispettoso della privacy e senza cookie, solo per conteggi anonimi delle visualizzazioni di pagina — mai per i tuoi dati di spesa.',

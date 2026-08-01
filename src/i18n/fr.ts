@@ -91,7 +91,7 @@ export default {
   },
   footer: {
     before:
-      "Toutes les données du groupe se trouvent uniquement dans l'URL de cette page — rien n'est enregistré sur cet appareil ni synchronisé où que ce soit. Ajoutez ce lien à vos favoris ou copiez-le pour conserver votre groupe ; fermer cet onglet sans enregistrer le lien entraînera la perte des données. Ce site utilise",
+      "Toutes les données du groupe se trouvent uniquement dans l'URL de cette page — jamais enregistrées sur cet appareil ni synchronisées où que ce soit (seule l'application elle-même est mise en cache pour une utilisation hors ligne). Ajoutez ce lien à vos favoris ou copiez-le pour conserver votre groupe ; fermer cet onglet sans enregistrer le lien entraînera la perte des données. Ce site utilise",
     goatcounter: 'GoatCounter',
     after:
       ", un outil d'analyse respectueux de la vie privée et sans cookies, uniquement pour des statistiques de pages vues anonymes — jamais pour vos données de dépenses.",

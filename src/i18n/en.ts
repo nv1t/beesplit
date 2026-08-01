@@ -90,7 +90,7 @@ export default {
   },
   footer: {
     before:
-      "All group data lives only in this page's URL — nothing is saved to this device or synced anywhere. Bookmark or copy the link to keep your group; closing this tab without saving the link will lose it. This site uses",
+      "All group data lives only in this page's URL — never saved to this device or synced anywhere (only the app itself is cached for offline use). Bookmark or copy the link to keep your group; closing this tab without saving the link will lose it. This site uses",
     goatcounter: 'GoatCounter',
     after:
       ', a privacy-friendly, cookie-less analytics tool, for anonymous page-view counts only — never your expense data.',

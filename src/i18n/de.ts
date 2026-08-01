@@ -91,7 +91,7 @@ export default {
   },
   footer: {
     before:
-      'Alle Gruppendaten befinden sich ausschließlich in der URL dieser Seite — nichts wird auf diesem Gerät gespeichert oder synchronisiert. Setze ein Lesezeichen oder kopiere den Link, um deine Gruppe zu behalten; schließt du diesen Tab, ohne den Link zu speichern, gehen die Daten verloren. Diese Seite verwendet',
+      'Alle Gruppendaten befinden sich ausschließlich in der URL dieser Seite — sie werden nie auf diesem Gerät gespeichert oder synchronisiert (nur die App selbst wird für die Offline-Nutzung zwischengespeichert). Setze ein Lesezeichen oder kopiere den Link, um deine Gruppe zu behalten; schließt du diesen Tab, ohne den Link zu speichern, gehen die Daten verloren. Diese Seite verwendet',
     goatcounter: 'GoatCounter',
     after:
       ', ein datenschutzfreundliches Analyse-Tool ohne Cookies, ausschließlich für anonyme Seitenaufrufe — niemals für deine Ausgabendaten.',
